@@ -85,7 +85,7 @@ int main(int argc, const char ** argv)
     if(argc < 4) {
         printf(
             "\n"
-            "Usage: anntest <inception weights.bin> <resnet weights.bin> <vgg weights.bin> [ <--video file>/<--capture 0> ] \n"
+            "Usage: anntest <inception weights.bin> <resnet weights.bin> <vgg weights.bin> [ --label <label text> <--video file>/<--capture 0> ] \n"
             "\n"
         );
         return -1;
@@ -97,6 +97,7 @@ int main(int argc, const char ** argv)
     argv += 4;
 
     std::string videoFile = "empty";
+    std::string labelFileName = "empty";
     int captureID = -1;
     if (argc && !strcasecmp(*argv, "--video"))
     {
@@ -107,6 +108,11 @@ int main(int argc, const char ** argv)
     {
         argv++;
         captureID = atoi(*argv);
+    }
+    else if(argc && !strcasecmp(*argv, "--label"))
+    {
+        argv++;
+        labelFileName = *argv;
     }
 
     // create context, input, output, and graph
@@ -265,7 +271,7 @@ int main(int argc, const char ** argv)
     cv::Mat inputFrame_inception, inputFrame_other;
     int fontFace = CV_FONT_HERSHEY_DUPLEX;
     double fontScale = 1;
-    int thickness = 1.2;
+    int thickness = 1.5;
     float *outputBuffer[3];
     for(int models = 0; models < 3; models++){
         outputBuffer[models] = new float[total_size];
@@ -275,12 +281,8 @@ int main(int argc, const char ** argv)
     while(argc && loopSeg)
     {
         VideoCapture cap;
-        if(captureID >= 0)
-            if(!cap.open(captureID))
-                return 0;
-        else
-            if(!cap.open(videoFile))
-                return 0;
+        if(!cap.open(0))
+            return 0;
         int frameCount = 0;
         float msFrame = 0, fpsAvg = 0, frameMsecs = 0;
         for(;;)
@@ -523,21 +525,21 @@ int main(int argc, const char ** argv)
             // Write Output on Image
             t0 = clockCounter();
             cv::resize(frame, outputDisplay, cv::Size(outputImgWidth,outputImgHeight));
-            int l = 0;
-            std::string modelName1 = "InceptionV4 -- Class:";
-            std::string modelName2 = "Resnet50 -- Class";
-            std::string modelName3 = "VGG16 -- Class";
+            int l = 1;
+            std::string modelName1 = "InceptionV4 -- Class: ";
+            std::string modelName2 = "Resnet50 -- Class: ";
+            std::string modelName3 = "VGG16 -- Class: ";
             modelName1 = modelName1 + std::to_string(inceptionID);
             modelName2 = modelName2 + std::to_string(resnetID);
             modelName3 = modelName3 + std::to_string(vggID);
-            putText(outputDisplay, modelName1, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,8);
-            rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,255,0),-1);
+            putText(outputDisplay, modelName1, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,255,0), thickness,8);
+            //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,255,0),-1);
             l++;
-            putText(outputDisplay, modelName2, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,8);
-            rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(255,0,0),-1);
+            putText(outputDisplay, modelName2, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(255,0,0), thickness,8);
+            //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(255,0,0),-1);
             l++;
-            putText(outputDisplay, modelName3, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,8);
-            rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,0,255),-1);
+            putText(outputDisplay, modelName3, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,0,255), thickness,8);
+            //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,0,255),-1);
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             printf("LIVE: Resize and write on Output Image Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
