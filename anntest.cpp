@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <unistd.h>
 #include <math.h>
 #include <immintrin.h>
+#include<fstream>
 
 #if ENABLE_OPENCV
 #include <opencv2/opencv.hpp>
@@ -98,6 +99,7 @@ int main(int argc, const char ** argv)
 
     std::string videoFile = "empty";
     std::string labelFileName = "empty";
+    std::string labelText[1000];
     int captureID = -1;
     if (argc && !strcasecmp(*argv, "--video"))
     {
@@ -113,6 +115,14 @@ int main(int argc, const char ** argv)
     {
         argv++;
         labelFileName = *argv;
+        string line;
+    	ifstream out(labelFileName);
+    	int lineNum = 0;
+    	while(getline(out, line)) {
+    		labelText[lineNum] = line;
+    		lineNum++;
+    	}
+    	out.close();
     }
 
     // create context, input, output, and graph
@@ -529,9 +539,9 @@ int main(int argc, const char ** argv)
             std::string modelName1 = "InceptionV4 -- Class: ";
             std::string modelName2 = "Resnet50 -- Class: ";
             std::string modelName3 = "VGG16 -- Class: ";
-            modelName1 = modelName1 + std::to_string(inceptionID);
-            modelName2 = modelName2 + std::to_string(resnetID);
-            modelName3 = modelName3 + std::to_string(vggID);
+            modelName1 = modelName1 + labelText[inceptionID];//std::to_string(inceptionID);
+            modelName2 = modelName2 + labelText[resnetID];//std::to_string(resnetID);
+            modelName3 = modelName3 + labelText[vggID];//std::to_string(vggID);
             putText(outputDisplay, modelName1, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,255,0), thickness,8);
             //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,255,0),-1);
             l++;
