@@ -115,8 +115,8 @@ int main(int argc, const char ** argv)
     {
         argv++;
         labelFileName = *argv;
-        string line;
-    	ifstream out(labelFileName);
+        std::string line;
+    	std::ifstream out(labelFileName);
     	int lineNum = 0;
     	while(getline(out, line)) {
     		labelText[lineNum] = line;
@@ -346,9 +346,9 @@ int main(int argc, const char ** argv)
                         float * dstG = dstR + (stride[2] >> 2);
                         float * dstB = dstG + (stride[2] >> 2);
                         for(vx_size x = 0; x < dims[0]; x++, src += 3) {
-                            *dstR++ = src[2];
-                            *dstG++ = src[1];
-                            *dstB++ = src[0];
+                            *dstR++ = (src[2] * 0.007843137) - 1;
+                            *dstG++ = (src[1] * 0.007843137) - 1;
+                            *dstB++ = (src[0] * 0.007843137) - 1;
                         }
                     }
                 }
@@ -536,20 +536,21 @@ int main(int argc, const char ** argv)
             t0 = clockCounter();
             cv::resize(frame, outputDisplay, cv::Size(outputImgWidth,outputImgHeight));
             int l = 1;
-            std::string modelName1 = "InceptionV4 -- Class: ";
-            std::string modelName2 = "Resnet50 -- Class: ";
-            std::string modelName3 = "VGG16 -- Class: ";
-            modelName1 = modelName1 + labelText[inceptionID];//std::to_string(inceptionID);
-            modelName2 = modelName2 + labelText[resnetID];//std::to_string(resnetID);
-            modelName3 = modelName3 + labelText[vggID];//std::to_string(vggID);
+            std::string modelName1 = "InceptionV4 -- ";
+            std::string modelName2 = "Resnet50 -- ";
+            std::string modelName3 = "VGG16 -- ";
+            std::string inceptionText = "Unclassified", resnetText = "Unclassified", vggText = "Unclassified";
+            if(outputBuffer[0][inceptionID] >= threshold){ inceptionText = labelText[inceptionID]; }
+            if(outputBuffer[1][resnetID] >= threshold){ resnetText = labelText[resnetID]; }
+            if(outputBuffer[2][vggID] >= threshold){ vggText = labelText[vggID]; }
+            modelName1 = modelName1 + inceptionText;//labelText[inceptionID];//std::to_string(inceptionID);
+            modelName2 = modelName2 + resnetText;//labelText[resnetID];//std::to_string(resnetID);
+            modelName3 = modelName3 + vggText;//labelText[vggID];//std::to_string(vggID);
             putText(outputDisplay, modelName1, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,255,0), thickness,8);
-            //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,255,0),-1);
             l++;
             putText(outputDisplay, modelName2, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(255,0,0), thickness,8);
-            //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(255,0,0),-1);
             l++;
             putText(outputDisplay, modelName3, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,0,255), thickness,8);
-            //rectangle(outputDisplay, Point(250, (l * 40)) , Point(300, (l * 40) + 40), Scalar(0,0,255),-1);
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             printf("LIVE: Resize and write on Output Image Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
