@@ -275,7 +275,7 @@ int main(int argc, const char ** argv)
     while(argc && loopSeg)
     {
         VideoCapture cap;
-        if(!strcasecmp(videoFile, "empty") && captureID >= 0)
+        if(captureID >= 0)
             if(!cap.open(captureID))
                 return 0;
         else
