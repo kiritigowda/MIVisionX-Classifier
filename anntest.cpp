@@ -101,6 +101,21 @@ int main(int argc, const char ** argv)
     std::string labelFileName = "empty";
     std::string labelText[1000];
     int captureID = -1;
+
+    if(argc && !strcasecmp(*argv, "--label"))
+    {
+        argv++;
+        labelFileName = *argv;
+        std::string line;
+        std::ifstream out(labelFileName);
+        int lineNum = 0;
+        while(getline(out, line)) {
+            labelText[lineNum] = line;
+            lineNum++;
+        }
+        out.close();
+    }
+
     if (argc && !strcasecmp(*argv, "--video"))
     {
         argv++;
@@ -111,19 +126,7 @@ int main(int argc, const char ** argv)
         argv++;
         captureID = atoi(*argv);
     }
-    else if(argc && !strcasecmp(*argv, "--label"))
-    {
-        argv++;
-        labelFileName = *argv;
-        std::string line;
-    	std::ifstream out(labelFileName);
-    	int lineNum = 0;
-    	while(getline(out, line)) {
-    		labelText[lineNum] = line;
-    		lineNum++;
-    	}
-    	out.close();
-    }
+    
 
     // create context, input, output, and graph
     vxRegisterLogCallback(NULL, log_callback, vx_false_e);
