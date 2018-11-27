@@ -237,32 +237,53 @@ int main(int argc, const char ** argv)
     printf("OK: graph initialization with annAddToGraph() took %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
     t0 = clockCounter();
-
     status = vxProcessGraph(graph_inception);
-    status = vxProcessGraph(graph_resnet);
-    status = vxProcessGraph(graph_vgg);
-
-    t1 = clockCounter();
     if(status != VX_SUCCESS) {
         printf("ERROR: vxProcessGraph() failed (%d)\n", status);
         return -1;
     }
+    status = vxProcessGraph(graph_resnet);
+    if(status != VX_SUCCESS) {
+        printf("ERROR: vxProcessGraph() failed (%d)\n", status);
+        return -1;
+    }
+    status = vxProcessGraph(graph_vgg);
+    if(status != VX_SUCCESS) {
+        printf("ERROR: vxProcessGraph() failed (%d)\n", status);
+        return -1;
+    }
+    t1 = clockCounter();
     printf("OK: vxProcessGraph() took %.3f msec (1st iteration)\n", (float)(t1-t0)*1000.0f/(float)freq);
 
-
-    t0 = clockCounter();
     int N = 100;
+    float inceptionV4Time, resnet50Time, vgg16Time;
+    t0 = clockCounter();
     for(int i = 0; i < N; i++) {
         status = vxProcessGraph(graph_inception);
+        if(status != VX_SUCCESS)
+            break;
+    }
+    t1 = clockCounter();
+    inceptionV4Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
+    printf("OK: inceptionV4 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
+    t0 = clockCounter();
+    for(int i = 0; i < N; i++) {
         status = vxProcessGraph(graph_resnet);
+        if(status != VX_SUCCESS)
+            break;
+    }
+    t1 = clockCounter();
+    resnet50Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
+    printf("OK: resnet50 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
+    t0 = clockCounter();
+    for(int i = 0; i < N; i++) {
         status = vxProcessGraph(graph_vgg);
         if(status != VX_SUCCESS)
             break;
     }
     t1 = clockCounter();
-    printf("OK: vxProcessGraph() took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
-
-
+    vgg16Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
+    printf("OK: vgg16 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
     /***** OPENCV Additions *****/
 
     // create display windows
@@ -307,7 +328,7 @@ int main(int argc, const char ** argv)
             if( frame.empty() ) break; // end of video stream
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("\n\nLIVE: OpenCV Frame Capture Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("\n\nLIVE: OpenCV Frame Capture Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
             // preprocess image frame
             t0 = clockCounter();
@@ -315,7 +336,7 @@ int main(int argc, const char ** argv)
             cv::resize(frame, inputFrame_other, cv::Size(224,224));
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: OpenCV Frame Resize Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: OpenCV Frame Resize Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
             // Copy Image frame into the input tensor
             t0 = clockCounter();
@@ -436,7 +457,7 @@ int main(int argc, const char ** argv)
 
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: Convert Image to Tensor Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: Convert Image to Tensor Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
    
             // process graph for the input
             t0 = clockCounter();
@@ -448,7 +469,7 @@ int main(int argc, const char ** argv)
             if(status != VX_SUCCESS) break;
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: Process Image Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: Process Image Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
         
             // copy output data into local buffer
@@ -522,7 +543,7 @@ int main(int argc, const char ** argv)
             }
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: Copy probability Output Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: Copy probability Output Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
             // process probabilty
             t0 = clockCounter();
@@ -533,7 +554,7 @@ int main(int argc, const char ** argv)
             int vggID = std::distance(outputBuffer[2], std::max_element(outputBuffer[2], outputBuffer[2] + N));
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: Get Classification ID Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: Get Classification ID Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
             // Write Output on Image
             t0 = clockCounter();
@@ -556,17 +577,17 @@ int main(int argc, const char ** argv)
             putText(outputDisplay, modelName3, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,0,255), thickness,8);
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: Resize and write on Output Image Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: Resize and write on Output Image Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
    
             // display img time
             t0 = clockCounter();
             cv::imshow("MIVision Image Classification", outputDisplay);
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            printf("LIVE: Output Image Display Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            //printf("LIVE: Output Image Display Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
             // calculate FPS
-            printf("LIVE: msec for frame -- %.3f msec\n", (float)msFrame);
+            //printf("LIVE: msec for frame -- %.3f msec\n", (float)msFrame);
             frameMsecs += msFrame;
             if(frameCount && frameCount%10 == 0){
                 printf("FPS LIVE: Avg FPS -- %d\n", (int)((ceil)(1000/(frameMsecs/10))));
