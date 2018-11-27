@@ -73,8 +73,7 @@ VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_inception(vx_graph graph, vx_te
 {
     vx_context context = vxGetContext((vx_reference)graph);
     ERROR_CHECK_OBJECT(context);
-    ERROR_CHECK_STATUS(vxLoadKernels(context, "vx_nn"));
-
+ 
     // create variables
     vx_size dims_conv1_3x3_s2_w[4] = { 3, 3, 3, 32 };
     vx_tensor conv1_3x3_s2_w = vxCreateTensor(context, 4, dims_conv1_3x3_s2_w, VX_TYPE_FLOAT32, 0);
@@ -9515,7 +9514,6 @@ VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_resnet(vx_graph graph, vx_tenso
 {
     vx_context context = vxGetContext((vx_reference)graph);
     ERROR_CHECK_OBJECT(context);
-    ERROR_CHECK_STATUS(vxLoadKernels(context, "vx_nn"));
 
     // create variables
     vx_size dims_conv1_w[4] = { 7, 7, 3, 64 };
@@ -12901,7 +12899,6 @@ VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_vgg(vx_graph graph, vx_tensor d
 {
     vx_context context = vxGetContext((vx_reference)graph);
     ERROR_CHECK_OBJECT(context);
-    ERROR_CHECK_STATUS(vxLoadKernels(context, "vx_nn"));
 
     // create variables
     vx_size dims_conv1_1_w[4] = { 3, 3, 3, 64 };

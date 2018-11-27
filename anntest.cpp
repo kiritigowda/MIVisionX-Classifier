@@ -135,6 +135,9 @@ int main(int argc, const char ** argv)
     }
     vxRegisterLogCallback(context, log_callback, vx_false_e);
 
+    // load vx_nn kernels
+    ERROR_CHECK_STATUS(vxLoadKernels(context, "vx_nn"));
+
     // creation inception graph
     vx_graph graph_inception = vxCreateGraph(context);
     status = vxGetStatus((vx_reference)graph_inception);
