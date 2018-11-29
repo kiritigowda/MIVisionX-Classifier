@@ -44,8 +44,165 @@ THE SOFTWARE.
 #include <opencv2/opencv.hpp>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#define CVUI_IMPLEMENTATION
+#include "cvui.h"
 using namespace cv;
 #endif
+
+#define MIVisionX_LEGEND "MIVisionX Image Classification"
+
+unsigned char colors[20][3]={
+                                {0,255,0},
+                                {0, 0,255},
+                                {255, 0,0},
+                                { 250, 150, 70},
+                                {102,102,156},
+                                {190,153,153},
+                                { 0,  0,   0},
+                                {250,170, 30},
+                                {220,220,  0},
+                                {0, 255, 0},
+                                {152,251,152},
+                                { 135,206,250},
+                                {220, 20, 60},
+                                {255,  0,  0},
+                                {  0,  0,255},
+                                {  0,  0, 70},
+                                {  0, 60,100},
+                                {  0, 80,100},
+                                {  0,  0,230},
+                                {119, 11, 32}
+                            };
+
+std::string classificationModels[20] = {
+    "InceptionV4",
+    "Resnet50",
+    "VGGNet16",
+    "GoogleNet",
+    "Resnet101",
+    "Resnet152",
+    "VGGNet19",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified",
+    "Unclassified"
+};
+
+// probability track bar
+const int threshold_slider_max = 100;
+int threshold_slider;
+double thresholdValue = 0.5;
+void threshold_on_trackbar( int, void* ){
+    thresholdValue = (double) threshold_slider/threshold_slider_max ;
+    return;
+}
+
+bool runInception, runResnet50, runVgg16, runGoogleNet, runResnet101, runResnet152, runVgg19;
+float inceptionV4Time_g, resnet50Time_g, vgg16Time_g, googleNetTime_g, resnet101Time_g, resnet152Time_g, vgg19Time_g;
+
+void createLegendImage()
+{
+    // create display legend image
+    int fontFace = CV_FONT_HERSHEY_DUPLEX;
+    double fontScale = 0.75;
+    int thickness = 1.3;
+    cv::Size legendGeometry = cv::Size(625, (10 * 40) + 40);
+    Mat legend = Mat::zeros(legendGeometry,CV_8UC3);
+    Rect roi = Rect(0,0,625,(10 * 40) + 40);
+    legend(roi).setTo(cv::Scalar(128,128,128));
+    int l = 0, model = 0;
+    int red, green, blue;
+    std::string className;
+    std::string bufferName;
+    char buffer [50];
+
+    // add headers
+    bufferName = "MIVisionX Image Classification";
+    putText(legend, bufferName, Point(20, (l * 40) + 30), fontFace, 1.2, cv::Scalar(66,13,9), thickness,5);
+    l++;
+    bufferName = "Model";
+    putText(legend, bufferName, Point(100, (l * 40) + 30), fontFace, 1, Scalar::all(0), thickness,5);
+    bufferName = "ms/frame";
+    putText(legend, bufferName, Point(300, (l * 40) + 30), fontFace, 1, Scalar::all(0), thickness,5);
+    bufferName = "Color";
+    putText(legend, bufferName, Point(525, (l * 40) + 30), fontFace, 1, Scalar::all(0), thickness,5);
+    l++;
+    
+    // add legend items
+    thickness = 1;    
+    red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", inceptionV4Time_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runInception);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+    red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", resnet50Time_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runResnet50);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+    red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", vgg16Time_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runVgg16);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+    red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", googleNetTime_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runGoogleNet);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+        red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", resnet101Time_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runResnet101);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+        red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", resnet152Time_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runResnet152);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+        red = (colors[model][2]); green = (colors[model][1]) ; blue = (colors[model][0]) ;
+    className = classificationModels[model];
+    sprintf (buffer, " %.2f ", vgg19Time_g );
+    cvui::checkbox(legend, 30, (l * 40) + 15,"", &runVgg19);
+    putText(legend, className, Point(80, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    putText(legend, buffer, Point(320, (l * 40) + 30), fontFace, fontScale, Scalar::all(0), thickness,3);
+    rectangle(legend, Point(550, (l * 40)) , Point(575, (l * 40) + 40), Scalar(red,green,blue),-1);
+    l++; model++;
+
+    cvui::trackbar(legend, 100, (l * 40)+10, 450, &threshold_slider, 0, 100);
+
+    cvui::update();
+    cv::imshow(MIVisionX_LEGEND, legend);
+
+    thresholdValue = (double) threshold_slider/threshold_slider_max ;
+}
 
 #define ERROR_CHECK_OBJECT(obj) { vx_status status = vxGetStatus((vx_reference)(obj)); if(status != VX_SUCCESS) { vxAddLogEntry((vx_reference)context, status     , "ERROR: failed with status = (%d) at " __FILE__ "#%d\n", status, __LINE__); return status; } }
 #define ERROR_CHECK_STATUS(call) { vx_status status = (call); if(status != VX_SUCCESS) { printf("ERROR: failed with status = (%d) at " __FILE__ "#%d\n", status, __LINE__); return -1; } }
@@ -69,15 +226,6 @@ inline int64_t clockCounter()
 inline int64_t clockFrequency()
 {
     return std::chrono::high_resolution_clock::period::den / std::chrono::high_resolution_clock::period::num;
-}
-
-// probability track bar
-const int threshold_slider_max = 100;
-int threshold_slider;
-double thresholdValue = 0.5;
-void threshold_on_trackbar( int, void* ){
-    thresholdValue = (double) threshold_slider/threshold_slider_max ;
-    return;
 }
 
 int main(int argc, const char ** argv)
@@ -287,15 +435,28 @@ int main(int argc, const char ** argv)
     t1 = clockCounter();
     vgg16Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
     printf("OK: vgg16 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
+    
     /***** OPENCV Additions *****/
 
     // create display windows
-    cv::namedWindow("MIVision Image Classification", cv::WINDOW_GUI_EXPANDED);
+    cv::namedWindow(MIVisionX_LEGEND);
+    cvui::init(MIVisionX_LEGEND);
+    cv::namedWindow("MIVisionX Image Classification - LIVE", cv::WINDOW_GUI_EXPANDED);
 
     //create a probability track bar
     threshold_slider = 50;
-    cv::createTrackbar("Probability Threshold", "MIVision Image Classification", &threshold_slider, threshold_slider_max, threshold_on_trackbar);
+    //cv::createTrackbar("Probability Threshold", MIVisionX_LEGEND, &threshold_slider, threshold_slider_max, threshold_on_trackbar);
 
+    // create display legend image
+    runInception = true; runResnet50 = true; runVgg16 = true;
+    runGoogleNet = false; runResnet101 = false; runResnet152 = false; runVgg19 = false;
+    inceptionV4Time_g = inceptionV4Time;
+    resnet50Time_g = resnet50Time;
+    vgg16Time_g = vgg16Time;
+    googleNetTime_g = resnet101Time_g = resnet152Time_g = vgg19Time_g = 0;
+    createLegendImage();
+
+    // define variables for run
     cv::Mat frame;
     int total_size = 1000;
     int outputImgWidth = 1080, outputImgHeight = 720;
@@ -335,7 +496,9 @@ int main(int argc, const char ** argv)
 
             // preprocess image frame
             t0 = clockCounter();
-            cv::resize(frame, inputFrame_inception, cv::Size(299,299));
+            if(runInception){
+                cv::resize(frame, inputFrame_inception, cv::Size(299,299));
+            }
             cv::resize(frame, inputFrame_other, cv::Size(224,224));
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
@@ -350,6 +513,7 @@ int main(int argc, const char ** argv)
             float * ptr;
             vx_size count;
             //inception copy
+            if(runInception)
             {
                 vxQueryTensor(data_inception, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
                 vxQueryTensor(data_inception, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
@@ -386,6 +550,7 @@ int main(int argc, const char ** argv)
                 }
             }
             // resnet copy
+            if(runResnet50)
             {
                 vxQueryTensor(data_resnet, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
                 vxQueryTensor(data_resnet, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
@@ -422,6 +587,7 @@ int main(int argc, const char ** argv)
                 }
             }
             // vgg copy
+            if(runVgg16)
             {
                 vxQueryTensor(data_vgg, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
                 vxQueryTensor(data_vgg, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
@@ -457,28 +623,48 @@ int main(int argc, const char ** argv)
                     return -1;
                 }
             }
-
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: Convert Image to Tensor Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
    
             // process graph for the input
-            t0 = clockCounter();
-            status = vxProcessGraph(graph_inception);
-            if(status != VX_SUCCESS) break;
-            status = vxProcessGraph(graph_resnet);
-            if(status != VX_SUCCESS) break;
-            status = vxProcessGraph(graph_vgg);
-            if(status != VX_SUCCESS) break;
-            t1 = clockCounter();
-            msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-            //printf("LIVE: Process Image Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            
+            if(runInception)
+            {
+                t0 = clockCounter();
+                status = vxProcessGraph(graph_inception);
+                if(status != VX_SUCCESS) break;
+                t1 = clockCounter();
+                inceptionV4Time_g = (float)(t1-t0)*1000.0f/(float)freq;
+                msFrame += (float)(t1-t0)*1000.0f/(float)freq;
+                //printf("LIVE: Process InceptionV4 Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            }
+            if(runResnet50)
+            {
+                t0 = clockCounter();
+                status = vxProcessGraph(graph_resnet);
+                if(status != VX_SUCCESS) break;
+                t1 = clockCounter();
+                resnet50Time_g = (float)(t1-t0)*1000.0f/(float)freq;
+                msFrame += (float)(t1-t0)*1000.0f/(float)freq;
+                //printf("LIVE: Process Resnet50 Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            }
+            if(runVgg16)
+            {
+                t0 = clockCounter();
+                status = vxProcessGraph(graph_vgg);
+                if(status != VX_SUCCESS) break;
+                t1 = clockCounter();
+                vgg16Time_g = (float)(t1-t0)*1000.0f/(float)freq;
+                msFrame += (float)(t1-t0)*1000.0f/(float)freq;
+                //printf("LIVE: Process VGG16 Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            }
 
-        
             // copy output data into local buffer
             t0 = clockCounter();
             usage = VX_READ_ONLY;
             // inception copy
+            if(runInception)
             {
                 vxQueryTensor(prob_inception, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
                 vxQueryTensor(prob_inception, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
@@ -501,6 +687,7 @@ int main(int argc, const char ** argv)
                 }
             }
             // resnet copy
+            if(runResnet50)
             {
                 vxQueryTensor(prob_resnet, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
                 vxQueryTensor(prob_resnet, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
@@ -523,6 +710,7 @@ int main(int argc, const char ** argv)
                 }
             }
             // vgg copy
+            if(runVgg16)
             {
                 vxQueryTensor(prob_vgg, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
                 vxQueryTensor(prob_vgg, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
@@ -552,9 +740,19 @@ int main(int argc, const char ** argv)
             t0 = clockCounter();
             threshold = (float)thresholdValue;
             const int N = 1000;
-            int inceptionID = std::distance(outputBuffer[0], std::max_element(outputBuffer[0], outputBuffer[0] + N));
-            int resnetID = std::distance(outputBuffer[1], std::max_element(outputBuffer[1], outputBuffer[1] + N));
-            int vggID = std::distance(outputBuffer[2], std::max_element(outputBuffer[2], outputBuffer[2] + N));
+            int inceptionID, resnetID, vggID;
+            if(runInception)
+            {
+                inceptionID = std::distance(outputBuffer[0], std::max_element(outputBuffer[0], outputBuffer[0] + N));
+            }
+            if(runResnet50)
+            {
+                resnetID = std::distance(outputBuffer[1], std::max_element(outputBuffer[1], outputBuffer[1] + N));
+            }
+            if(runVgg16)
+            {
+                vggID = std::distance(outputBuffer[2], std::max_element(outputBuffer[2], outputBuffer[2] + N));
+            }
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: Get Classification ID Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
@@ -563,28 +761,43 @@ int main(int argc, const char ** argv)
             t0 = clockCounter();
             cv::resize(frame, outputDisplay, cv::Size(outputImgWidth,outputImgHeight));
             int l = 1;
-            std::string modelName1 = "InceptionV4 -- ";
-            std::string modelName2 = "Resnet50 -- ";
-            std::string modelName3 = "VGG16 -- ";
+            std::string modelName1 = "InceptionV4 - ";
+            std::string modelName2 = "Resnet50 - ";
+            std::string modelName3 = "VGG16 - ";
             std::string inceptionText = "Unclassified", resnetText = "Unclassified", vggText = "Unclassified";
             if(outputBuffer[0][inceptionID] >= threshold){ inceptionText = labelText[inceptionID]; }
             if(outputBuffer[1][resnetID] >= threshold){ resnetText = labelText[resnetID]; }
             if(outputBuffer[2][vggID] >= threshold){ vggText = labelText[vggID]; }
-            modelName1 = modelName1 + inceptionText;//labelText[inceptionID];//std::to_string(inceptionID);
-            modelName2 = modelName2 + resnetText;//labelText[resnetID];//std::to_string(resnetID);
-            modelName3 = modelName3 + vggText;//labelText[vggID];//std::to_string(vggID);
-            putText(outputDisplay, modelName1, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,255,0), thickness,8);
-            l++;
-            putText(outputDisplay, modelName2, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(255,0,0), thickness,8);
-            l++;
-            putText(outputDisplay, modelName3, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(0,0,255), thickness,8);
+            modelName1 = modelName1 + inceptionText;
+            modelName2 = modelName2 + resnetText;
+            modelName3 = modelName3 + vggText;
+            int red, green, blue;
+            if(runInception)
+            {
+                red = (colors[0][2]); green = (colors[0][1]); blue = (colors[0][0]) ;
+                putText(outputDisplay, modelName1, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(red,green,blue), thickness,8);
+                l++;
+            }
+            if(runResnet50)
+            {
+                red = (colors[1][2]); green = (colors[1][1]); blue = (colors[1][0]) ;
+                putText(outputDisplay, modelName2, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(red,green,blue), thickness,8);
+                l++;
+            }
+            if(runVgg16)
+            {
+                red = (colors[2][2]); green = (colors[2][1]); blue = (colors[2][0]) ;
+                putText(outputDisplay, modelName3, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(red,green,blue), thickness,8);
+                l++;
+            }
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: Resize and write on Output Image Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
    
             // display img time
             t0 = clockCounter();
-            cv::imshow("MIVision Image Classification", outputDisplay);
+            cv::imshow("MIVisionX Image Classification - LIVE", outputDisplay);
+            createLegendImage();
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: Output Image Display Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
