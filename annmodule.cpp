@@ -13552,3 +13552,2626 @@ VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_vgg(vx_graph graph, vx_tensor d
 
     return VX_SUCCESS;
 }
+
+VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_googleNet(vx_graph graph, vx_tensor data, vx_tensor loss3_loss3, const char * binaryFilename)
+{
+    vx_context context = vxGetContext((vx_reference)graph);
+    ERROR_CHECK_OBJECT(context);
+
+    // create variables
+    vx_size dims_conv1_7x7_s2_w[4] = { 7, 7, 3, 64 };
+    vx_tensor conv1_7x7_s2_w = vxCreateTensor(context, 4, dims_conv1_7x7_s2_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_7x7_s2_w);
+    vx_size dims_conv1_7x7_s2_b[2] = { 64, 1 };
+    vx_tensor conv1_7x7_s2_b = vxCreateTensor(context, 2, dims_conv1_7x7_s2_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_7x7_s2_b);
+    vx_size dims_conv2_3x3_reduce_w[4] = { 1, 1, 64, 64 };
+    vx_tensor conv2_3x3_reduce_w = vxCreateTensor(context, 4, dims_conv2_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_3x3_reduce_w);
+    vx_size dims_conv2_3x3_reduce_b[2] = { 64, 1 };
+    vx_tensor conv2_3x3_reduce_b = vxCreateTensor(context, 2, dims_conv2_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_3x3_reduce_b);
+    vx_size dims_conv2_3x3_w[4] = { 3, 3, 64, 192 };
+    vx_tensor conv2_3x3_w = vxCreateTensor(context, 4, dims_conv2_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_3x3_w);
+    vx_size dims_conv2_3x3_b[2] = { 192, 1 };
+    vx_tensor conv2_3x3_b = vxCreateTensor(context, 2, dims_conv2_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_3x3_b);
+    vx_size dims_inception_3a_1x1_w[4] = { 1, 1, 192, 64 };
+    vx_tensor inception_3a_1x1_w = vxCreateTensor(context, 4, dims_inception_3a_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_1x1_w);
+    vx_size dims_inception_3a_1x1_b[2] = { 64, 1 };
+    vx_tensor inception_3a_1x1_b = vxCreateTensor(context, 2, dims_inception_3a_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_1x1_b);
+    vx_size dims_inception_3a_3x3_reduce_w[4] = { 1, 1, 192, 96 };
+    vx_tensor inception_3a_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_3a_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_3x3_reduce_w);
+    vx_size dims_inception_3a_3x3_reduce_b[2] = { 96, 1 };
+    vx_tensor inception_3a_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_3a_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_3x3_reduce_b);
+    vx_size dims_inception_3a_3x3_w[4] = { 3, 3, 96, 128 };
+    vx_tensor inception_3a_3x3_w = vxCreateTensor(context, 4, dims_inception_3a_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_3x3_w);
+    vx_size dims_inception_3a_3x3_b[2] = { 128, 1 };
+    vx_tensor inception_3a_3x3_b = vxCreateTensor(context, 2, dims_inception_3a_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_3x3_b);
+    vx_size dims_inception_3a_5x5_reduce_w[4] = { 1, 1, 192, 16 };
+    vx_tensor inception_3a_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_3a_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_5x5_reduce_w);
+    vx_size dims_inception_3a_5x5_reduce_b[2] = { 16, 1 };
+    vx_tensor inception_3a_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_3a_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_5x5_reduce_b);
+    vx_size dims_inception_3a_5x5_w[4] = { 5, 5, 16, 32 };
+    vx_tensor inception_3a_5x5_w = vxCreateTensor(context, 4, dims_inception_3a_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_5x5_w);
+    vx_size dims_inception_3a_5x5_b[2] = { 32, 1 };
+    vx_tensor inception_3a_5x5_b = vxCreateTensor(context, 2, dims_inception_3a_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_5x5_b);
+    vx_size dims_inception_3a_pool_proj_w[4] = { 1, 1, 192, 32 };
+    vx_tensor inception_3a_pool_proj_w = vxCreateTensor(context, 4, dims_inception_3a_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_pool_proj_w);
+    vx_size dims_inception_3a_pool_proj_b[2] = { 32, 1 };
+    vx_tensor inception_3a_pool_proj_b = vxCreateTensor(context, 2, dims_inception_3a_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_pool_proj_b);
+    vx_size dims_inception_3b_1x1_w[4] = { 1, 1, 256, 128 };
+    vx_tensor inception_3b_1x1_w = vxCreateTensor(context, 4, dims_inception_3b_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_1x1_w);
+    vx_size dims_inception_3b_1x1_b[2] = { 128, 1 };
+    vx_tensor inception_3b_1x1_b = vxCreateTensor(context, 2, dims_inception_3b_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_1x1_b);
+    vx_size dims_inception_3b_3x3_reduce_w[4] = { 1, 1, 256, 128 };
+    vx_tensor inception_3b_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_3b_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_3x3_reduce_w);
+    vx_size dims_inception_3b_3x3_reduce_b[2] = { 128, 1 };
+    vx_tensor inception_3b_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_3b_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_3x3_reduce_b);
+    vx_size dims_inception_3b_3x3_w[4] = { 3, 3, 128, 192 };
+    vx_tensor inception_3b_3x3_w = vxCreateTensor(context, 4, dims_inception_3b_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_3x3_w);
+    vx_size dims_inception_3b_3x3_b[2] = { 192, 1 };
+    vx_tensor inception_3b_3x3_b = vxCreateTensor(context, 2, dims_inception_3b_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_3x3_b);
+    vx_size dims_inception_3b_5x5_reduce_w[4] = { 1, 1, 256, 32 };
+    vx_tensor inception_3b_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_3b_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_5x5_reduce_w);
+    vx_size dims_inception_3b_5x5_reduce_b[2] = { 32, 1 };
+    vx_tensor inception_3b_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_3b_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_5x5_reduce_b);
+    vx_size dims_inception_3b_5x5_w[4] = { 5, 5, 32, 96 };
+    vx_tensor inception_3b_5x5_w = vxCreateTensor(context, 4, dims_inception_3b_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_5x5_w);
+    vx_size dims_inception_3b_5x5_b[2] = { 96, 1 };
+    vx_tensor inception_3b_5x5_b = vxCreateTensor(context, 2, dims_inception_3b_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_5x5_b);
+    vx_size dims_inception_3b_pool_proj_w[4] = { 1, 1, 256, 64 };
+    vx_tensor inception_3b_pool_proj_w = vxCreateTensor(context, 4, dims_inception_3b_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_pool_proj_w);
+    vx_size dims_inception_3b_pool_proj_b[2] = { 64, 1 };
+    vx_tensor inception_3b_pool_proj_b = vxCreateTensor(context, 2, dims_inception_3b_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_pool_proj_b);
+    vx_size dims_inception_4a_1x1_w[4] = { 1, 1, 480, 192 };
+    vx_tensor inception_4a_1x1_w = vxCreateTensor(context, 4, dims_inception_4a_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_1x1_w);
+    vx_size dims_inception_4a_1x1_b[2] = { 192, 1 };
+    vx_tensor inception_4a_1x1_b = vxCreateTensor(context, 2, dims_inception_4a_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_1x1_b);
+    vx_size dims_inception_4a_3x3_reduce_w[4] = { 1, 1, 480, 96 };
+    vx_tensor inception_4a_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_4a_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_3x3_reduce_w);
+    vx_size dims_inception_4a_3x3_reduce_b[2] = { 96, 1 };
+    vx_tensor inception_4a_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_4a_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_3x3_reduce_b);
+    vx_size dims_inception_4a_3x3_w[4] = { 3, 3, 96, 208 };
+    vx_tensor inception_4a_3x3_w = vxCreateTensor(context, 4, dims_inception_4a_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_3x3_w);
+    vx_size dims_inception_4a_3x3_b[2] = { 208, 1 };
+    vx_tensor inception_4a_3x3_b = vxCreateTensor(context, 2, dims_inception_4a_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_3x3_b);
+    vx_size dims_inception_4a_5x5_reduce_w[4] = { 1, 1, 480, 16 };
+    vx_tensor inception_4a_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_4a_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_5x5_reduce_w);
+    vx_size dims_inception_4a_5x5_reduce_b[2] = { 16, 1 };
+    vx_tensor inception_4a_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_4a_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_5x5_reduce_b);
+    vx_size dims_inception_4a_5x5_w[4] = { 5, 5, 16, 48 };
+    vx_tensor inception_4a_5x5_w = vxCreateTensor(context, 4, dims_inception_4a_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_5x5_w);
+    vx_size dims_inception_4a_5x5_b[2] = { 48, 1 };
+    vx_tensor inception_4a_5x5_b = vxCreateTensor(context, 2, dims_inception_4a_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_5x5_b);
+    vx_size dims_inception_4a_pool_proj_w[4] = { 1, 1, 480, 64 };
+    vx_tensor inception_4a_pool_proj_w = vxCreateTensor(context, 4, dims_inception_4a_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_pool_proj_w);
+    vx_size dims_inception_4a_pool_proj_b[2] = { 64, 1 };
+    vx_tensor inception_4a_pool_proj_b = vxCreateTensor(context, 2, dims_inception_4a_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_pool_proj_b);
+    vx_size dims_loss1_conv_w[4] = { 1, 1, 512, 128 };
+    vx_tensor loss1_conv_w = vxCreateTensor(context, 4, dims_loss1_conv_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_conv_w);
+    vx_size dims_loss1_conv_b[2] = { 128, 1 };
+    vx_tensor loss1_conv_b = vxCreateTensor(context, 2, dims_loss1_conv_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_conv_b);
+    vx_size dims_loss1_fc_w[4] = { 4, 4, 128, 1024 };
+    vx_tensor loss1_fc_w = vxCreateTensor(context, 4, dims_loss1_fc_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_fc_w);
+    vx_size dims_loss1_fc_b[2] = { 1024, 1 };
+    vx_tensor loss1_fc_b = vxCreateTensor(context, 2, dims_loss1_fc_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_fc_b);
+    vx_size dims_loss1_classifier_w[4] = { 1, 1, 1024, 1000 };
+    vx_tensor loss1_classifier_w = vxCreateTensor(context, 4, dims_loss1_classifier_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_classifier_w);
+    vx_size dims_loss1_classifier_b[2] = { 1000, 1 };
+    vx_tensor loss1_classifier_b = vxCreateTensor(context, 2, dims_loss1_classifier_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_classifier_b);
+    vx_size dims_inception_4b_1x1_w[4] = { 1, 1, 512, 160 };
+    vx_tensor inception_4b_1x1_w = vxCreateTensor(context, 4, dims_inception_4b_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_1x1_w);
+    vx_size dims_inception_4b_1x1_b[2] = { 160, 1 };
+    vx_tensor inception_4b_1x1_b = vxCreateTensor(context, 2, dims_inception_4b_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_1x1_b);
+    vx_size dims_inception_4b_3x3_reduce_w[4] = { 1, 1, 512, 112 };
+    vx_tensor inception_4b_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_4b_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_3x3_reduce_w);
+    vx_size dims_inception_4b_3x3_reduce_b[2] = { 112, 1 };
+    vx_tensor inception_4b_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_4b_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_3x3_reduce_b);
+    vx_size dims_inception_4b_3x3_w[4] = { 3, 3, 112, 224 };
+    vx_tensor inception_4b_3x3_w = vxCreateTensor(context, 4, dims_inception_4b_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_3x3_w);
+    vx_size dims_inception_4b_3x3_b[2] = { 224, 1 };
+    vx_tensor inception_4b_3x3_b = vxCreateTensor(context, 2, dims_inception_4b_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_3x3_b);
+    vx_size dims_inception_4b_5x5_reduce_w[4] = { 1, 1, 512, 24 };
+    vx_tensor inception_4b_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_4b_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_5x5_reduce_w);
+    vx_size dims_inception_4b_5x5_reduce_b[2] = { 24, 1 };
+    vx_tensor inception_4b_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_4b_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_5x5_reduce_b);
+    vx_size dims_inception_4b_5x5_w[4] = { 5, 5, 24, 64 };
+    vx_tensor inception_4b_5x5_w = vxCreateTensor(context, 4, dims_inception_4b_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_5x5_w);
+    vx_size dims_inception_4b_5x5_b[2] = { 64, 1 };
+    vx_tensor inception_4b_5x5_b = vxCreateTensor(context, 2, dims_inception_4b_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_5x5_b);
+    vx_size dims_inception_4b_pool_proj_w[4] = { 1, 1, 512, 64 };
+    vx_tensor inception_4b_pool_proj_w = vxCreateTensor(context, 4, dims_inception_4b_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_pool_proj_w);
+    vx_size dims_inception_4b_pool_proj_b[2] = { 64, 1 };
+    vx_tensor inception_4b_pool_proj_b = vxCreateTensor(context, 2, dims_inception_4b_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_pool_proj_b);
+    vx_size dims_inception_4c_1x1_w[4] = { 1, 1, 512, 128 };
+    vx_tensor inception_4c_1x1_w = vxCreateTensor(context, 4, dims_inception_4c_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_1x1_w);
+    vx_size dims_inception_4c_1x1_b[2] = { 128, 1 };
+    vx_tensor inception_4c_1x1_b = vxCreateTensor(context, 2, dims_inception_4c_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_1x1_b);
+    vx_size dims_inception_4c_3x3_reduce_w[4] = { 1, 1, 512, 128 };
+    vx_tensor inception_4c_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_4c_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_3x3_reduce_w);
+    vx_size dims_inception_4c_3x3_reduce_b[2] = { 128, 1 };
+    vx_tensor inception_4c_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_4c_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_3x3_reduce_b);
+    vx_size dims_inception_4c_3x3_w[4] = { 3, 3, 128, 256 };
+    vx_tensor inception_4c_3x3_w = vxCreateTensor(context, 4, dims_inception_4c_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_3x3_w);
+    vx_size dims_inception_4c_3x3_b[2] = { 256, 1 };
+    vx_tensor inception_4c_3x3_b = vxCreateTensor(context, 2, dims_inception_4c_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_3x3_b);
+    vx_size dims_inception_4c_5x5_reduce_w[4] = { 1, 1, 512, 24 };
+    vx_tensor inception_4c_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_4c_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_5x5_reduce_w);
+    vx_size dims_inception_4c_5x5_reduce_b[2] = { 24, 1 };
+    vx_tensor inception_4c_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_4c_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_5x5_reduce_b);
+    vx_size dims_inception_4c_5x5_w[4] = { 5, 5, 24, 64 };
+    vx_tensor inception_4c_5x5_w = vxCreateTensor(context, 4, dims_inception_4c_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_5x5_w);
+    vx_size dims_inception_4c_5x5_b[2] = { 64, 1 };
+    vx_tensor inception_4c_5x5_b = vxCreateTensor(context, 2, dims_inception_4c_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_5x5_b);
+    vx_size dims_inception_4c_pool_proj_w[4] = { 1, 1, 512, 64 };
+    vx_tensor inception_4c_pool_proj_w = vxCreateTensor(context, 4, dims_inception_4c_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_pool_proj_w);
+    vx_size dims_inception_4c_pool_proj_b[2] = { 64, 1 };
+    vx_tensor inception_4c_pool_proj_b = vxCreateTensor(context, 2, dims_inception_4c_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_pool_proj_b);
+    vx_size dims_inception_4d_1x1_w[4] = { 1, 1, 512, 112 };
+    vx_tensor inception_4d_1x1_w = vxCreateTensor(context, 4, dims_inception_4d_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_1x1_w);
+    vx_size dims_inception_4d_1x1_b[2] = { 112, 1 };
+    vx_tensor inception_4d_1x1_b = vxCreateTensor(context, 2, dims_inception_4d_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_1x1_b);
+    vx_size dims_inception_4d_3x3_reduce_w[4] = { 1, 1, 512, 144 };
+    vx_tensor inception_4d_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_4d_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_3x3_reduce_w);
+    vx_size dims_inception_4d_3x3_reduce_b[2] = { 144, 1 };
+    vx_tensor inception_4d_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_4d_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_3x3_reduce_b);
+    vx_size dims_inception_4d_3x3_w[4] = { 3, 3, 144, 288 };
+    vx_tensor inception_4d_3x3_w = vxCreateTensor(context, 4, dims_inception_4d_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_3x3_w);
+    vx_size dims_inception_4d_3x3_b[2] = { 288, 1 };
+    vx_tensor inception_4d_3x3_b = vxCreateTensor(context, 2, dims_inception_4d_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_3x3_b);
+    vx_size dims_inception_4d_5x5_reduce_w[4] = { 1, 1, 512, 32 };
+    vx_tensor inception_4d_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_4d_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_5x5_reduce_w);
+    vx_size dims_inception_4d_5x5_reduce_b[2] = { 32, 1 };
+    vx_tensor inception_4d_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_4d_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_5x5_reduce_b);
+    vx_size dims_inception_4d_5x5_w[4] = { 5, 5, 32, 64 };
+    vx_tensor inception_4d_5x5_w = vxCreateTensor(context, 4, dims_inception_4d_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_5x5_w);
+    vx_size dims_inception_4d_5x5_b[2] = { 64, 1 };
+    vx_tensor inception_4d_5x5_b = vxCreateTensor(context, 2, dims_inception_4d_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_5x5_b);
+    vx_size dims_inception_4d_pool_proj_w[4] = { 1, 1, 512, 64 };
+    vx_tensor inception_4d_pool_proj_w = vxCreateTensor(context, 4, dims_inception_4d_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_pool_proj_w);
+    vx_size dims_inception_4d_pool_proj_b[2] = { 64, 1 };
+    vx_tensor inception_4d_pool_proj_b = vxCreateTensor(context, 2, dims_inception_4d_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_pool_proj_b);
+    vx_size dims_loss2_conv_w[4] = { 1, 1, 528, 128 };
+    vx_tensor loss2_conv_w = vxCreateTensor(context, 4, dims_loss2_conv_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_conv_w);
+    vx_size dims_loss2_conv_b[2] = { 128, 1 };
+    vx_tensor loss2_conv_b = vxCreateTensor(context, 2, dims_loss2_conv_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_conv_b);
+    vx_size dims_loss2_fc_w[4] = { 4, 4, 128, 1024 };
+    vx_tensor loss2_fc_w = vxCreateTensor(context, 4, dims_loss2_fc_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_fc_w);
+    vx_size dims_loss2_fc_b[2] = { 1024, 1 };
+    vx_tensor loss2_fc_b = vxCreateTensor(context, 2, dims_loss2_fc_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_fc_b);
+    vx_size dims_loss2_classifier_w[4] = { 1, 1, 1024, 1000 };
+    vx_tensor loss2_classifier_w = vxCreateTensor(context, 4, dims_loss2_classifier_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_classifier_w);
+    vx_size dims_loss2_classifier_b[2] = { 1000, 1 };
+    vx_tensor loss2_classifier_b = vxCreateTensor(context, 2, dims_loss2_classifier_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_classifier_b);
+    vx_size dims_inception_4e_1x1_w[4] = { 1, 1, 528, 256 };
+    vx_tensor inception_4e_1x1_w = vxCreateTensor(context, 4, dims_inception_4e_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_1x1_w);
+    vx_size dims_inception_4e_1x1_b[2] = { 256, 1 };
+    vx_tensor inception_4e_1x1_b = vxCreateTensor(context, 2, dims_inception_4e_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_1x1_b);
+    vx_size dims_inception_4e_3x3_reduce_w[4] = { 1, 1, 528, 160 };
+    vx_tensor inception_4e_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_4e_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_3x3_reduce_w);
+    vx_size dims_inception_4e_3x3_reduce_b[2] = { 160, 1 };
+    vx_tensor inception_4e_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_4e_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_3x3_reduce_b);
+    vx_size dims_inception_4e_3x3_w[4] = { 3, 3, 160, 320 };
+    vx_tensor inception_4e_3x3_w = vxCreateTensor(context, 4, dims_inception_4e_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_3x3_w);
+    vx_size dims_inception_4e_3x3_b[2] = { 320, 1 };
+    vx_tensor inception_4e_3x3_b = vxCreateTensor(context, 2, dims_inception_4e_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_3x3_b);
+    vx_size dims_inception_4e_5x5_reduce_w[4] = { 1, 1, 528, 32 };
+    vx_tensor inception_4e_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_4e_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_5x5_reduce_w);
+    vx_size dims_inception_4e_5x5_reduce_b[2] = { 32, 1 };
+    vx_tensor inception_4e_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_4e_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_5x5_reduce_b);
+    vx_size dims_inception_4e_5x5_w[4] = { 5, 5, 32, 128 };
+    vx_tensor inception_4e_5x5_w = vxCreateTensor(context, 4, dims_inception_4e_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_5x5_w);
+    vx_size dims_inception_4e_5x5_b[2] = { 128, 1 };
+    vx_tensor inception_4e_5x5_b = vxCreateTensor(context, 2, dims_inception_4e_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_5x5_b);
+    vx_size dims_inception_4e_pool_proj_w[4] = { 1, 1, 528, 128 };
+    vx_tensor inception_4e_pool_proj_w = vxCreateTensor(context, 4, dims_inception_4e_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_pool_proj_w);
+    vx_size dims_inception_4e_pool_proj_b[2] = { 128, 1 };
+    vx_tensor inception_4e_pool_proj_b = vxCreateTensor(context, 2, dims_inception_4e_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_pool_proj_b);
+    vx_size dims_inception_5a_1x1_w[4] = { 1, 1, 832, 256 };
+    vx_tensor inception_5a_1x1_w = vxCreateTensor(context, 4, dims_inception_5a_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_1x1_w);
+    vx_size dims_inception_5a_1x1_b[2] = { 256, 1 };
+    vx_tensor inception_5a_1x1_b = vxCreateTensor(context, 2, dims_inception_5a_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_1x1_b);
+    vx_size dims_inception_5a_3x3_reduce_w[4] = { 1, 1, 832, 160 };
+    vx_tensor inception_5a_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_5a_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_3x3_reduce_w);
+    vx_size dims_inception_5a_3x3_reduce_b[2] = { 160, 1 };
+    vx_tensor inception_5a_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_5a_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_3x3_reduce_b);
+    vx_size dims_inception_5a_3x3_w[4] = { 3, 3, 160, 320 };
+    vx_tensor inception_5a_3x3_w = vxCreateTensor(context, 4, dims_inception_5a_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_3x3_w);
+    vx_size dims_inception_5a_3x3_b[2] = { 320, 1 };
+    vx_tensor inception_5a_3x3_b = vxCreateTensor(context, 2, dims_inception_5a_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_3x3_b);
+    vx_size dims_inception_5a_5x5_reduce_w[4] = { 1, 1, 832, 32 };
+    vx_tensor inception_5a_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_5a_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_5x5_reduce_w);
+    vx_size dims_inception_5a_5x5_reduce_b[2] = { 32, 1 };
+    vx_tensor inception_5a_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_5a_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_5x5_reduce_b);
+    vx_size dims_inception_5a_5x5_w[4] = { 5, 5, 32, 128 };
+    vx_tensor inception_5a_5x5_w = vxCreateTensor(context, 4, dims_inception_5a_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_5x5_w);
+    vx_size dims_inception_5a_5x5_b[2] = { 128, 1 };
+    vx_tensor inception_5a_5x5_b = vxCreateTensor(context, 2, dims_inception_5a_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_5x5_b);
+    vx_size dims_inception_5a_pool_proj_w[4] = { 1, 1, 832, 128 };
+    vx_tensor inception_5a_pool_proj_w = vxCreateTensor(context, 4, dims_inception_5a_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_pool_proj_w);
+    vx_size dims_inception_5a_pool_proj_b[2] = { 128, 1 };
+    vx_tensor inception_5a_pool_proj_b = vxCreateTensor(context, 2, dims_inception_5a_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_pool_proj_b);
+    vx_size dims_inception_5b_1x1_w[4] = { 1, 1, 832, 384 };
+    vx_tensor inception_5b_1x1_w = vxCreateTensor(context, 4, dims_inception_5b_1x1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_1x1_w);
+    vx_size dims_inception_5b_1x1_b[2] = { 384, 1 };
+    vx_tensor inception_5b_1x1_b = vxCreateTensor(context, 2, dims_inception_5b_1x1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_1x1_b);
+    vx_size dims_inception_5b_3x3_reduce_w[4] = { 1, 1, 832, 192 };
+    vx_tensor inception_5b_3x3_reduce_w = vxCreateTensor(context, 4, dims_inception_5b_3x3_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_3x3_reduce_w);
+    vx_size dims_inception_5b_3x3_reduce_b[2] = { 192, 1 };
+    vx_tensor inception_5b_3x3_reduce_b = vxCreateTensor(context, 2, dims_inception_5b_3x3_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_3x3_reduce_b);
+    vx_size dims_inception_5b_3x3_w[4] = { 3, 3, 192, 384 };
+    vx_tensor inception_5b_3x3_w = vxCreateTensor(context, 4, dims_inception_5b_3x3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_3x3_w);
+    vx_size dims_inception_5b_3x3_b[2] = { 384, 1 };
+    vx_tensor inception_5b_3x3_b = vxCreateTensor(context, 2, dims_inception_5b_3x3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_3x3_b);
+    vx_size dims_inception_5b_5x5_reduce_w[4] = { 1, 1, 832, 48 };
+    vx_tensor inception_5b_5x5_reduce_w = vxCreateTensor(context, 4, dims_inception_5b_5x5_reduce_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_5x5_reduce_w);
+    vx_size dims_inception_5b_5x5_reduce_b[2] = { 48, 1 };
+    vx_tensor inception_5b_5x5_reduce_b = vxCreateTensor(context, 2, dims_inception_5b_5x5_reduce_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_5x5_reduce_b);
+    vx_size dims_inception_5b_5x5_w[4] = { 5, 5, 48, 128 };
+    vx_tensor inception_5b_5x5_w = vxCreateTensor(context, 4, dims_inception_5b_5x5_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_5x5_w);
+    vx_size dims_inception_5b_5x5_b[2] = { 128, 1 };
+    vx_tensor inception_5b_5x5_b = vxCreateTensor(context, 2, dims_inception_5b_5x5_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_5x5_b);
+    vx_size dims_inception_5b_pool_proj_w[4] = { 1, 1, 832, 128 };
+    vx_tensor inception_5b_pool_proj_w = vxCreateTensor(context, 4, dims_inception_5b_pool_proj_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_pool_proj_w);
+    vx_size dims_inception_5b_pool_proj_b[2] = { 128, 1 };
+    vx_tensor inception_5b_pool_proj_b = vxCreateTensor(context, 2, dims_inception_5b_pool_proj_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_pool_proj_b);
+    vx_size dims_loss3_classifier_w[4] = { 1, 1, 1024, 1000 };
+    vx_tensor loss3_classifier_w = vxCreateTensor(context, 4, dims_loss3_classifier_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss3_classifier_w);
+    vx_size dims_loss3_classifier_b[2] = { 1000, 1 };
+    vx_tensor loss3_classifier_b = vxCreateTensor(context, 2, dims_loss3_classifier_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss3_classifier_b);
+
+    // initialize variables
+    FILE * fp__variables = fopen(binaryFilename, "rb");
+    if(!fp__variables) {
+        vxAddLogEntry((vx_reference)context, VX_FAILURE, "ERROR: unable to open: %s\n", binaryFilename);
+        return VX_FAILURE;
+    }
+    { vx_uint32 magic = 0;
+      fread(&magic, 1, sizeof(magic), fp__variables);
+      if(magic != 0xf00dd1e0) {
+        vxAddLogEntry((vx_reference)context, VX_FAILURE, "ERROR: invalid file magic in %s\n", binaryFilename);
+        return VX_FAILURE;
+      }
+    }
+    ERROR_CHECK_STATUS(initializeTensor(context, conv1_7x7_s2_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv1_7x7_s2_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3a_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_3b_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4a_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss1_conv_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss1_conv_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss1_fc_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss1_fc_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss1_classifier_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss1_classifier_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4b_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4c_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4d_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss2_conv_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss2_conv_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss2_fc_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss2_fc_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss2_classifier_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss2_classifier_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_4e_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5a_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_1x1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_1x1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_3x3_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_3x3_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_3x3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_3x3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_5x5_reduce_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_5x5_reduce_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_5x5_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_5x5_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_pool_proj_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, inception_5b_pool_proj_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss3_classifier_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, loss3_classifier_b, fp__variables, binaryFilename));
+    { vx_uint32 magic = 0;
+      fread(&magic, 1, sizeof(magic), fp__variables);
+      if(magic != 0xf00dd1e2) {
+        vxAddLogEntry((vx_reference)context, VX_FAILURE, "ERROR: invalid eoff magic in %s\n", binaryFilename);
+        return VX_FAILURE;
+      }
+      fclose(fp__variables);
+    }
+
+    // create local tensors used in graph
+    vx_size dims_conv1_7x7_s2[4] = { 112, 112, 64, 1 };
+    vx_tensor conv1_7x7_s2 = vxCreateVirtualTensor(graph, 4, dims_conv1_7x7_s2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_7x7_s2);
+    vx_size dims_conv1_relu_7x7[4] = { 112, 112, 64, 1 };
+    vx_tensor conv1_relu_7x7 = vxCreateVirtualTensor(graph, 4, dims_conv1_relu_7x7, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_relu_7x7);
+    vx_size dims_pool1_3x3_s2[4] = { 56, 56, 64, 1 };
+    vx_tensor pool1_3x3_s2 = vxCreateVirtualTensor(graph, 4, dims_pool1_3x3_s2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool1_3x3_s2);
+    vx_size dims_pool1_norm1[4] = { 56, 56, 64, 1 };
+    vx_tensor pool1_norm1 = vxCreateVirtualTensor(graph, 4, dims_pool1_norm1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool1_norm1);
+    vx_size dims_conv2_3x3_reduce[4] = { 56, 56, 64, 1 };
+    vx_tensor conv2_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_conv2_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_3x3_reduce);
+    vx_size dims_conv2_relu_3x3_reduce[4] = { 56, 56, 64, 1 };
+    vx_tensor conv2_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_conv2_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_relu_3x3_reduce);
+    vx_size dims_conv2_3x3[4] = { 56, 56, 192, 1 };
+    vx_tensor conv2_3x3 = vxCreateVirtualTensor(graph, 4, dims_conv2_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_3x3);
+    vx_size dims_conv2_relu_3x3[4] = { 56, 56, 192, 1 };
+    vx_tensor conv2_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_conv2_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_relu_3x3);
+    vx_size dims_conv2_norm2[4] = { 56, 56, 192, 1 };
+    vx_tensor conv2_norm2 = vxCreateVirtualTensor(graph, 4, dims_conv2_norm2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_norm2);
+    vx_size dims_pool2_3x3_s2[4] = { 28, 28, 192, 1 };
+    vx_tensor pool2_3x3_s2 = vxCreateVirtualTensor(graph, 4, dims_pool2_3x3_s2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool2_3x3_s2);
+    vx_size dims_inception_3a_1x1[4] = { 28, 28, 64, 1 };
+    vx_tensor inception_3a_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_3a_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_1x1);
+    vx_size dims_inception_3a_relu_1x1[4] = { 28, 28, 64, 1 };
+    vx_tensor inception_3a_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_3a_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_relu_1x1);
+    vx_size dims_inception_3a_3x3_reduce[4] = { 28, 28, 96, 1 };
+    vx_tensor inception_3a_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3a_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_3x3_reduce);
+    vx_size dims_inception_3a_relu_3x3_reduce[4] = { 28, 28, 96, 1 };
+    vx_tensor inception_3a_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3a_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_relu_3x3_reduce);
+    vx_size dims_inception_3a_3x3[4] = { 28, 28, 128, 1 };
+    vx_tensor inception_3a_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_3a_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_3x3);
+    vx_size dims_inception_3a_relu_3x3[4] = { 28, 28, 128, 1 };
+    vx_tensor inception_3a_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_3a_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_relu_3x3);
+    vx_size dims_inception_3a_5x5_reduce[4] = { 28, 28, 16, 1 };
+    vx_tensor inception_3a_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3a_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_5x5_reduce);
+    vx_size dims_inception_3a_relu_5x5_reduce[4] = { 28, 28, 16, 1 };
+    vx_tensor inception_3a_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3a_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_relu_5x5_reduce);
+    vx_size dims_inception_3a_5x5[4] = { 28, 28, 32, 1 };
+    vx_tensor inception_3a_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_3a_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_5x5);
+    vx_size dims_inception_3a_relu_5x5[4] = { 28, 28, 32, 1 };
+    vx_tensor inception_3a_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_3a_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_relu_5x5);
+    vx_size dims_inception_3a_pool[4] = { 28, 28, 192, 1 };
+    vx_tensor inception_3a_pool = vxCreateVirtualTensor(graph, 4, dims_inception_3a_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_pool);
+    vx_size dims_inception_3a_pool_proj[4] = { 28, 28, 32, 1 };
+    vx_tensor inception_3a_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_3a_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_pool_proj);
+    vx_size dims_inception_3a_relu_pool_proj[4] = { 28, 28, 32, 1 };
+    vx_tensor inception_3a_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_3a_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_relu_pool_proj);
+    vx_size dims_inception_3a_output[4] = { 28, 28, 256, 1 };
+    vx_tensor inception_3a_output = vxCreateVirtualTensor(graph, 4, dims_inception_3a_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3a_output);
+    vx_size dims_inception_3b_1x1[4] = { 28, 28, 128, 1 };
+    vx_tensor inception_3b_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_3b_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_1x1);
+    vx_size dims_inception_3b_relu_1x1[4] = { 28, 28, 128, 1 };
+    vx_tensor inception_3b_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_3b_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_relu_1x1);
+    vx_size dims_inception_3b_3x3_reduce[4] = { 28, 28, 128, 1 };
+    vx_tensor inception_3b_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3b_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_3x3_reduce);
+    vx_size dims_inception_3b_relu_3x3_reduce[4] = { 28, 28, 128, 1 };
+    vx_tensor inception_3b_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3b_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_relu_3x3_reduce);
+    vx_size dims_inception_3b_3x3[4] = { 28, 28, 192, 1 };
+    vx_tensor inception_3b_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_3b_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_3x3);
+    vx_size dims_inception_3b_relu_3x3[4] = { 28, 28, 192, 1 };
+    vx_tensor inception_3b_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_3b_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_relu_3x3);
+    vx_size dims_inception_3b_5x5_reduce[4] = { 28, 28, 32, 1 };
+    vx_tensor inception_3b_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3b_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_5x5_reduce);
+    vx_size dims_inception_3b_relu_5x5_reduce[4] = { 28, 28, 32, 1 };
+    vx_tensor inception_3b_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_3b_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_relu_5x5_reduce);
+    vx_size dims_inception_3b_5x5[4] = { 28, 28, 96, 1 };
+    vx_tensor inception_3b_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_3b_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_5x5);
+    vx_size dims_inception_3b_relu_5x5[4] = { 28, 28, 96, 1 };
+    vx_tensor inception_3b_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_3b_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_relu_5x5);
+    vx_size dims_inception_3b_pool[4] = { 28, 28, 256, 1 };
+    vx_tensor inception_3b_pool = vxCreateVirtualTensor(graph, 4, dims_inception_3b_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_pool);
+    vx_size dims_inception_3b_pool_proj[4] = { 28, 28, 64, 1 };
+    vx_tensor inception_3b_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_3b_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_pool_proj);
+    vx_size dims_inception_3b_relu_pool_proj[4] = { 28, 28, 64, 1 };
+    vx_tensor inception_3b_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_3b_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_relu_pool_proj);
+    vx_size dims_inception_3b_output[4] = { 28, 28, 480, 1 };
+    vx_tensor inception_3b_output = vxCreateVirtualTensor(graph, 4, dims_inception_3b_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_3b_output);
+    vx_size dims_pool3_3x3_s2[4] = { 14, 14, 480, 1 };
+    vx_tensor pool3_3x3_s2 = vxCreateVirtualTensor(graph, 4, dims_pool3_3x3_s2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool3_3x3_s2);
+    vx_size dims_inception_4a_1x1[4] = { 14, 14, 192, 1 };
+    vx_tensor inception_4a_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4a_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_1x1);
+    vx_size dims_inception_4a_relu_1x1[4] = { 14, 14, 192, 1 };
+    vx_tensor inception_4a_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4a_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_relu_1x1);
+    vx_size dims_inception_4a_3x3_reduce[4] = { 14, 14, 96, 1 };
+    vx_tensor inception_4a_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4a_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_3x3_reduce);
+    vx_size dims_inception_4a_relu_3x3_reduce[4] = { 14, 14, 96, 1 };
+    vx_tensor inception_4a_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4a_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_relu_3x3_reduce);
+    vx_size dims_inception_4a_3x3[4] = { 14, 14, 208, 1 };
+    vx_tensor inception_4a_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4a_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_3x3);
+    vx_size dims_inception_4a_relu_3x3[4] = { 14, 14, 208, 1 };
+    vx_tensor inception_4a_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4a_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_relu_3x3);
+    vx_size dims_inception_4a_5x5_reduce[4] = { 14, 14, 16, 1 };
+    vx_tensor inception_4a_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4a_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_5x5_reduce);
+    vx_size dims_inception_4a_relu_5x5_reduce[4] = { 14, 14, 16, 1 };
+    vx_tensor inception_4a_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4a_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_relu_5x5_reduce);
+    vx_size dims_inception_4a_5x5[4] = { 14, 14, 48, 1 };
+    vx_tensor inception_4a_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4a_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_5x5);
+    vx_size dims_inception_4a_relu_5x5[4] = { 14, 14, 48, 1 };
+    vx_tensor inception_4a_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4a_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_relu_5x5);
+    vx_size dims_inception_4a_pool[4] = { 14, 14, 480, 1 };
+    vx_tensor inception_4a_pool = vxCreateVirtualTensor(graph, 4, dims_inception_4a_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_pool);
+    vx_size dims_inception_4a_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4a_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4a_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_pool_proj);
+    vx_size dims_inception_4a_relu_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4a_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4a_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_relu_pool_proj);
+    vx_size dims_inception_4a_output[4] = { 14, 14, 512, 1 };
+    vx_tensor inception_4a_output = vxCreateVirtualTensor(graph, 4, dims_inception_4a_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4a_output);
+    vx_size dims_loss1_ave_pool[4] = { 4, 4, 512, 1 };
+    vx_tensor loss1_ave_pool = vxCreateVirtualTensor(graph, 4, dims_loss1_ave_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_ave_pool);
+    vx_size dims_loss1_conv[4] = { 4, 4, 128, 1 };
+    vx_tensor loss1_conv = vxCreateVirtualTensor(graph, 4, dims_loss1_conv, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_conv);
+    vx_size dims_loss1_relu_conv[4] = { 4, 4, 128, 1 };
+    vx_tensor loss1_relu_conv = vxCreateVirtualTensor(graph, 4, dims_loss1_relu_conv, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_relu_conv);
+    vx_size dims_loss1_fc[4] = { 1, 1, 1024, 1 };
+    vx_tensor loss1_fc = vxCreateVirtualTensor(graph, 4, dims_loss1_fc, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_fc);
+    vx_size dims_loss1_relu_fc[4] = { 1, 1, 1024, 1 };
+    vx_tensor loss1_relu_fc = vxCreateVirtualTensor(graph, 4, dims_loss1_relu_fc, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_relu_fc);
+    vx_size dims_loss1_classifier[4] = { 1, 1, 1000, 1 };
+    vx_tensor loss1_classifier = vxCreateVirtualTensor(graph, 4, dims_loss1_classifier, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_classifier);
+    vx_size dims_loss1_loss[4] = { 1, 1, 1000, 1 };
+    vx_tensor loss1_loss = vxCreateVirtualTensor(graph, 4, dims_loss1_loss, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss1_loss);
+    vx_size dims_inception_4b_1x1[4] = { 14, 14, 160, 1 };
+    vx_tensor inception_4b_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4b_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_1x1);
+    vx_size dims_inception_4b_relu_1x1[4] = { 14, 14, 160, 1 };
+    vx_tensor inception_4b_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4b_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_relu_1x1);
+    vx_size dims_inception_4b_3x3_reduce[4] = { 14, 14, 112, 1 };
+    vx_tensor inception_4b_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4b_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_3x3_reduce);
+    vx_size dims_inception_4b_relu_3x3_reduce[4] = { 14, 14, 112, 1 };
+    vx_tensor inception_4b_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4b_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_relu_3x3_reduce);
+    vx_size dims_inception_4b_3x3[4] = { 14, 14, 224, 1 };
+    vx_tensor inception_4b_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4b_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_3x3);
+    vx_size dims_inception_4b_relu_3x3[4] = { 14, 14, 224, 1 };
+    vx_tensor inception_4b_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4b_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_relu_3x3);
+    vx_size dims_inception_4b_5x5_reduce[4] = { 14, 14, 24, 1 };
+    vx_tensor inception_4b_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4b_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_5x5_reduce);
+    vx_size dims_inception_4b_relu_5x5_reduce[4] = { 14, 14, 24, 1 };
+    vx_tensor inception_4b_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4b_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_relu_5x5_reduce);
+    vx_size dims_inception_4b_5x5[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4b_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4b_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_5x5);
+    vx_size dims_inception_4b_relu_5x5[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4b_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4b_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_relu_5x5);
+    vx_size dims_inception_4b_pool[4] = { 14, 14, 512, 1 };
+    vx_tensor inception_4b_pool = vxCreateVirtualTensor(graph, 4, dims_inception_4b_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_pool);
+    vx_size dims_inception_4b_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4b_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4b_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_pool_proj);
+    vx_size dims_inception_4b_relu_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4b_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4b_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_relu_pool_proj);
+    vx_size dims_inception_4b_output[4] = { 14, 14, 512, 1 };
+    vx_tensor inception_4b_output = vxCreateVirtualTensor(graph, 4, dims_inception_4b_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4b_output);
+    vx_size dims_inception_4c_1x1[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4c_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4c_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_1x1);
+    vx_size dims_inception_4c_relu_1x1[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4c_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4c_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_relu_1x1);
+    vx_size dims_inception_4c_3x3_reduce[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4c_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4c_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_3x3_reduce);
+    vx_size dims_inception_4c_relu_3x3_reduce[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4c_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4c_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_relu_3x3_reduce);
+    vx_size dims_inception_4c_3x3[4] = { 14, 14, 256, 1 };
+    vx_tensor inception_4c_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4c_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_3x3);
+    vx_size dims_inception_4c_relu_3x3[4] = { 14, 14, 256, 1 };
+    vx_tensor inception_4c_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4c_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_relu_3x3);
+    vx_size dims_inception_4c_5x5_reduce[4] = { 14, 14, 24, 1 };
+    vx_tensor inception_4c_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4c_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_5x5_reduce);
+    vx_size dims_inception_4c_relu_5x5_reduce[4] = { 14, 14, 24, 1 };
+    vx_tensor inception_4c_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4c_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_relu_5x5_reduce);
+    vx_size dims_inception_4c_5x5[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4c_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4c_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_5x5);
+    vx_size dims_inception_4c_relu_5x5[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4c_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4c_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_relu_5x5);
+    vx_size dims_inception_4c_pool[4] = { 14, 14, 512, 1 };
+    vx_tensor inception_4c_pool = vxCreateVirtualTensor(graph, 4, dims_inception_4c_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_pool);
+    vx_size dims_inception_4c_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4c_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4c_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_pool_proj);
+    vx_size dims_inception_4c_relu_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4c_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4c_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_relu_pool_proj);
+    vx_size dims_inception_4c_output[4] = { 14, 14, 512, 1 };
+    vx_tensor inception_4c_output = vxCreateVirtualTensor(graph, 4, dims_inception_4c_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4c_output);
+    vx_size dims_inception_4d_1x1[4] = { 14, 14, 112, 1 };
+    vx_tensor inception_4d_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4d_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_1x1);
+    vx_size dims_inception_4d_relu_1x1[4] = { 14, 14, 112, 1 };
+    vx_tensor inception_4d_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4d_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_relu_1x1);
+    vx_size dims_inception_4d_3x3_reduce[4] = { 14, 14, 144, 1 };
+    vx_tensor inception_4d_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4d_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_3x3_reduce);
+    vx_size dims_inception_4d_relu_3x3_reduce[4] = { 14, 14, 144, 1 };
+    vx_tensor inception_4d_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4d_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_relu_3x3_reduce);
+    vx_size dims_inception_4d_3x3[4] = { 14, 14, 288, 1 };
+    vx_tensor inception_4d_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4d_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_3x3);
+    vx_size dims_inception_4d_relu_3x3[4] = { 14, 14, 288, 1 };
+    vx_tensor inception_4d_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4d_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_relu_3x3);
+    vx_size dims_inception_4d_5x5_reduce[4] = { 14, 14, 32, 1 };
+    vx_tensor inception_4d_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4d_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_5x5_reduce);
+    vx_size dims_inception_4d_relu_5x5_reduce[4] = { 14, 14, 32, 1 };
+    vx_tensor inception_4d_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4d_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_relu_5x5_reduce);
+    vx_size dims_inception_4d_5x5[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4d_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4d_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_5x5);
+    vx_size dims_inception_4d_relu_5x5[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4d_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4d_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_relu_5x5);
+    vx_size dims_inception_4d_pool[4] = { 14, 14, 512, 1 };
+    vx_tensor inception_4d_pool = vxCreateVirtualTensor(graph, 4, dims_inception_4d_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_pool);
+    vx_size dims_inception_4d_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4d_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4d_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_pool_proj);
+    vx_size dims_inception_4d_relu_pool_proj[4] = { 14, 14, 64, 1 };
+    vx_tensor inception_4d_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4d_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_relu_pool_proj);
+    vx_size dims_inception_4d_output[4] = { 14, 14, 528, 1 };
+    vx_tensor inception_4d_output = vxCreateVirtualTensor(graph, 4, dims_inception_4d_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4d_output);
+    vx_size dims_loss2_ave_pool[4] = { 4, 4, 528, 1 };
+    vx_tensor loss2_ave_pool = vxCreateVirtualTensor(graph, 4, dims_loss2_ave_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_ave_pool);
+    vx_size dims_loss2_conv[4] = { 4, 4, 128, 1 };
+    vx_tensor loss2_conv = vxCreateVirtualTensor(graph, 4, dims_loss2_conv, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_conv);
+    vx_size dims_loss2_relu_conv[4] = { 4, 4, 128, 1 };
+    vx_tensor loss2_relu_conv = vxCreateVirtualTensor(graph, 4, dims_loss2_relu_conv, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_relu_conv);
+    vx_size dims_loss2_fc[4] = { 1, 1, 1024, 1 };
+    vx_tensor loss2_fc = vxCreateVirtualTensor(graph, 4, dims_loss2_fc, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_fc);
+    vx_size dims_loss2_relu_fc[4] = { 1, 1, 1024, 1 };
+    vx_tensor loss2_relu_fc = vxCreateVirtualTensor(graph, 4, dims_loss2_relu_fc, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_relu_fc);
+    vx_size dims_loss2_classifier[4] = { 1, 1, 1000, 1 };
+    vx_tensor loss2_classifier = vxCreateVirtualTensor(graph, 4, dims_loss2_classifier, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_classifier);
+    vx_size dims_loss2_loss[4] = { 1, 1, 1000, 1 };
+    vx_tensor loss2_loss = vxCreateVirtualTensor(graph, 4, dims_loss2_loss, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss2_loss);
+    vx_size dims_inception_4e_1x1[4] = { 14, 14, 256, 1 };
+    vx_tensor inception_4e_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4e_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_1x1);
+    vx_size dims_inception_4e_relu_1x1[4] = { 14, 14, 256, 1 };
+    vx_tensor inception_4e_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_4e_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_relu_1x1);
+    vx_size dims_inception_4e_3x3_reduce[4] = { 14, 14, 160, 1 };
+    vx_tensor inception_4e_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4e_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_3x3_reduce);
+    vx_size dims_inception_4e_relu_3x3_reduce[4] = { 14, 14, 160, 1 };
+    vx_tensor inception_4e_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4e_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_relu_3x3_reduce);
+    vx_size dims_inception_4e_3x3[4] = { 14, 14, 320, 1 };
+    vx_tensor inception_4e_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4e_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_3x3);
+    vx_size dims_inception_4e_relu_3x3[4] = { 14, 14, 320, 1 };
+    vx_tensor inception_4e_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_4e_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_relu_3x3);
+    vx_size dims_inception_4e_5x5_reduce[4] = { 14, 14, 32, 1 };
+    vx_tensor inception_4e_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4e_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_5x5_reduce);
+    vx_size dims_inception_4e_relu_5x5_reduce[4] = { 14, 14, 32, 1 };
+    vx_tensor inception_4e_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_4e_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_relu_5x5_reduce);
+    vx_size dims_inception_4e_5x5[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4e_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4e_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_5x5);
+    vx_size dims_inception_4e_relu_5x5[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4e_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_4e_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_relu_5x5);
+    vx_size dims_inception_4e_pool[4] = { 14, 14, 528, 1 };
+    vx_tensor inception_4e_pool = vxCreateVirtualTensor(graph, 4, dims_inception_4e_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_pool);
+    vx_size dims_inception_4e_pool_proj[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4e_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4e_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_pool_proj);
+    vx_size dims_inception_4e_relu_pool_proj[4] = { 14, 14, 128, 1 };
+    vx_tensor inception_4e_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_4e_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_relu_pool_proj);
+    vx_size dims_inception_4e_output[4] = { 14, 14, 832, 1 };
+    vx_tensor inception_4e_output = vxCreateVirtualTensor(graph, 4, dims_inception_4e_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_4e_output);
+    vx_size dims_pool4_3x3_s2[4] = { 7, 7, 832, 1 };
+    vx_tensor pool4_3x3_s2 = vxCreateVirtualTensor(graph, 4, dims_pool4_3x3_s2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool4_3x3_s2);
+    vx_size dims_inception_5a_1x1[4] = { 7, 7, 256, 1 };
+    vx_tensor inception_5a_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_5a_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_1x1);
+    vx_size dims_inception_5a_relu_1x1[4] = { 7, 7, 256, 1 };
+    vx_tensor inception_5a_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_5a_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_relu_1x1);
+    vx_size dims_inception_5a_3x3_reduce[4] = { 7, 7, 160, 1 };
+    vx_tensor inception_5a_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5a_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_3x3_reduce);
+    vx_size dims_inception_5a_relu_3x3_reduce[4] = { 7, 7, 160, 1 };
+    vx_tensor inception_5a_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5a_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_relu_3x3_reduce);
+    vx_size dims_inception_5a_3x3[4] = { 7, 7, 320, 1 };
+    vx_tensor inception_5a_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_5a_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_3x3);
+    vx_size dims_inception_5a_relu_3x3[4] = { 7, 7, 320, 1 };
+    vx_tensor inception_5a_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_5a_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_relu_3x3);
+    vx_size dims_inception_5a_5x5_reduce[4] = { 7, 7, 32, 1 };
+    vx_tensor inception_5a_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5a_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_5x5_reduce);
+    vx_size dims_inception_5a_relu_5x5_reduce[4] = { 7, 7, 32, 1 };
+    vx_tensor inception_5a_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5a_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_relu_5x5_reduce);
+    vx_size dims_inception_5a_5x5[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5a_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_5a_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_5x5);
+    vx_size dims_inception_5a_relu_5x5[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5a_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_5a_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_relu_5x5);
+    vx_size dims_inception_5a_pool[4] = { 7, 7, 832, 1 };
+    vx_tensor inception_5a_pool = vxCreateVirtualTensor(graph, 4, dims_inception_5a_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_pool);
+    vx_size dims_inception_5a_pool_proj[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5a_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_5a_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_pool_proj);
+    vx_size dims_inception_5a_relu_pool_proj[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5a_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_5a_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_relu_pool_proj);
+    vx_size dims_inception_5a_output[4] = { 7, 7, 832, 1 };
+    vx_tensor inception_5a_output = vxCreateVirtualTensor(graph, 4, dims_inception_5a_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5a_output);
+    vx_size dims_inception_5b_1x1[4] = { 7, 7, 384, 1 };
+    vx_tensor inception_5b_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_5b_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_1x1);
+    vx_size dims_inception_5b_relu_1x1[4] = { 7, 7, 384, 1 };
+    vx_tensor inception_5b_relu_1x1 = vxCreateVirtualTensor(graph, 4, dims_inception_5b_relu_1x1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_relu_1x1);
+    vx_size dims_inception_5b_3x3_reduce[4] = { 7, 7, 192, 1 };
+    vx_tensor inception_5b_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5b_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_3x3_reduce);
+    vx_size dims_inception_5b_relu_3x3_reduce[4] = { 7, 7, 192, 1 };
+    vx_tensor inception_5b_relu_3x3_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5b_relu_3x3_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_relu_3x3_reduce);
+    vx_size dims_inception_5b_3x3[4] = { 7, 7, 384, 1 };
+    vx_tensor inception_5b_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_5b_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_3x3);
+    vx_size dims_inception_5b_relu_3x3[4] = { 7, 7, 384, 1 };
+    vx_tensor inception_5b_relu_3x3 = vxCreateVirtualTensor(graph, 4, dims_inception_5b_relu_3x3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_relu_3x3);
+    vx_size dims_inception_5b_5x5_reduce[4] = { 7, 7, 48, 1 };
+    vx_tensor inception_5b_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5b_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_5x5_reduce);
+    vx_size dims_inception_5b_relu_5x5_reduce[4] = { 7, 7, 48, 1 };
+    vx_tensor inception_5b_relu_5x5_reduce = vxCreateVirtualTensor(graph, 4, dims_inception_5b_relu_5x5_reduce, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_relu_5x5_reduce);
+    vx_size dims_inception_5b_5x5[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5b_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_5b_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_5x5);
+    vx_size dims_inception_5b_relu_5x5[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5b_relu_5x5 = vxCreateVirtualTensor(graph, 4, dims_inception_5b_relu_5x5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_relu_5x5);
+    vx_size dims_inception_5b_pool[4] = { 7, 7, 832, 1 };
+    vx_tensor inception_5b_pool = vxCreateVirtualTensor(graph, 4, dims_inception_5b_pool, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_pool);
+    vx_size dims_inception_5b_pool_proj[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5b_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_5b_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_pool_proj);
+    vx_size dims_inception_5b_relu_pool_proj[4] = { 7, 7, 128, 1 };
+    vx_tensor inception_5b_relu_pool_proj = vxCreateVirtualTensor(graph, 4, dims_inception_5b_relu_pool_proj, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_relu_pool_proj);
+    vx_size dims_inception_5b_output[4] = { 7, 7, 1024, 1 };
+    vx_tensor inception_5b_output = vxCreateVirtualTensor(graph, 4, dims_inception_5b_output, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(inception_5b_output);
+    vx_size dims_pool5_7x7_s1[4] = { 1, 1, 1024, 1 };
+    vx_tensor pool5_7x7_s1 = vxCreateVirtualTensor(graph, 4, dims_pool5_7x7_s1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool5_7x7_s1);
+    vx_size dims_loss3_classifier[4] = { 1, 1, 1000, 1 };
+    vx_tensor loss3_classifier = vxCreateVirtualTensor(graph, 4, dims_loss3_classifier, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(loss3_classifier);
+
+    // create nodes in graph
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 3;
+      conv_params.padding_y = 3;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, data, conv1_7x7_s2_w, conv1_7x7_s2_b, &conv_params, sizeof(conv_params), conv1_7x7_s2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv1_7x7_s2, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, conv1_relu_7x7);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, conv1_relu_7x7, VX_NN_POOLING_MAX, 3, 3, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool1_3x3_s2);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxNormalizationLayer(graph, pool1_3x3_s2, VX_NN_NORMALIZATION_ACROSS_MAPS , 5, 1.000000e-04f, 7.500000e-01f, pool1_norm1);
+   ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool1_norm1, conv2_3x3_reduce_w, conv2_3x3_reduce_b, &conv_params, sizeof(conv_params), conv2_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv2_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, conv2_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, conv2_relu_3x3_reduce, conv2_3x3_w, conv2_3x3_b, &conv_params, sizeof(conv_params), conv2_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv2_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, conv2_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxNormalizationLayer(graph, conv2_relu_3x3, VX_NN_NORMALIZATION_ACROSS_MAPS , 5, 1.000000e-04f, 7.500000e-01f, conv2_norm2);
+   ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, conv2_norm2, VX_NN_POOLING_MAX, 3, 3, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool2_3x3_s2);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool2_3x3_s2, inception_3a_1x1_w, inception_3a_1x1_b, &conv_params, sizeof(conv_params), inception_3a_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3a_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3a_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool2_3x3_s2, inception_3a_3x3_reduce_w, inception_3a_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_3a_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3a_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3a_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3a_relu_3x3_reduce, inception_3a_3x3_w, inception_3a_3x3_b, &conv_params, sizeof(conv_params), inception_3a_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3a_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3a_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool2_3x3_s2, inception_3a_5x5_reduce_w, inception_3a_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_3a_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3a_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3a_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3a_relu_5x5_reduce, inception_3a_5x5_w, inception_3a_5x5_b, &conv_params, sizeof(conv_params), inception_3a_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3a_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3a_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, pool2_3x3_s2, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_3a_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3a_pool, inception_3a_pool_proj_w, inception_3a_pool_proj_b, &conv_params, sizeof(conv_params), inception_3a_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3a_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3a_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_3a_output, inception_3a_relu_1x1, inception_3a_relu_3x3, inception_3a_relu_5x5, inception_3a_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3a_output, inception_3b_1x1_w, inception_3b_1x1_b, &conv_params, sizeof(conv_params), inception_3b_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3b_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3b_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3a_output, inception_3b_3x3_reduce_w, inception_3b_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_3b_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3b_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3b_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3b_relu_3x3_reduce, inception_3b_3x3_w, inception_3b_3x3_b, &conv_params, sizeof(conv_params), inception_3b_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3b_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3b_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3a_output, inception_3b_5x5_reduce_w, inception_3b_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_3b_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3b_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3b_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3b_relu_5x5_reduce, inception_3b_5x5_w, inception_3b_5x5_b, &conv_params, sizeof(conv_params), inception_3b_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3b_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3b_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_3a_output, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_3b_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_3b_pool, inception_3b_pool_proj_w, inception_3b_pool_proj_b, &conv_params, sizeof(conv_params), inception_3b_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_3b_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_3b_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_3b_output, inception_3b_relu_1x1, inception_3b_relu_3x3, inception_3b_relu_5x5, inception_3b_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_3b_output, VX_NN_POOLING_MAX, 3, 3, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool3_3x3_s2);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool3_3x3_s2, inception_4a_1x1_w, inception_4a_1x1_b, &conv_params, sizeof(conv_params), inception_4a_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4a_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4a_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool3_3x3_s2, inception_4a_3x3_reduce_w, inception_4a_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_4a_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4a_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4a_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4a_relu_3x3_reduce, inception_4a_3x3_w, inception_4a_3x3_b, &conv_params, sizeof(conv_params), inception_4a_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4a_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4a_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool3_3x3_s2, inception_4a_5x5_reduce_w, inception_4a_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_4a_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4a_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4a_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4a_relu_5x5_reduce, inception_4a_5x5_w, inception_4a_5x5_b, &conv_params, sizeof(conv_params), inception_4a_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4a_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4a_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, pool3_3x3_s2, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_4a_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4a_pool, inception_4a_pool_proj_w, inception_4a_pool_proj_b, &conv_params, sizeof(conv_params), inception_4a_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4a_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4a_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_4a_output, inception_4a_relu_1x1, inception_4a_relu_3x3, inception_4a_relu_5x5, inception_4a_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4a_output, VX_NN_POOLING_AVG, 5, 5, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss1_ave_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, loss1_ave_pool, loss1_conv_w, loss1_conv_b, &conv_params, sizeof(conv_params), loss1_conv);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, loss1_conv, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, loss1_relu_conv);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, loss1_relu_conv, loss1_fc_w, loss1_fc_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss1_fc);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, loss1_fc, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, loss1_relu_fc);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, loss1_relu_fc, loss1_classifier_w, loss1_classifier_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss1_classifier);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxSoftmaxLayer(graph, loss1_classifier, loss1_loss);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4a_output, inception_4b_1x1_w, inception_4b_1x1_b, &conv_params, sizeof(conv_params), inception_4b_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4b_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4b_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4a_output, inception_4b_3x3_reduce_w, inception_4b_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_4b_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4b_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4b_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4b_relu_3x3_reduce, inception_4b_3x3_w, inception_4b_3x3_b, &conv_params, sizeof(conv_params), inception_4b_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4b_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4b_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4a_output, inception_4b_5x5_reduce_w, inception_4b_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_4b_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4b_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4b_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4b_relu_5x5_reduce, inception_4b_5x5_w, inception_4b_5x5_b, &conv_params, sizeof(conv_params), inception_4b_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4b_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4b_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4a_output, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_4b_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4b_pool, inception_4b_pool_proj_w, inception_4b_pool_proj_b, &conv_params, sizeof(conv_params), inception_4b_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4b_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4b_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_4b_output, inception_4b_relu_1x1, inception_4b_relu_3x3, inception_4b_relu_5x5, inception_4b_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4b_output, inception_4c_1x1_w, inception_4c_1x1_b, &conv_params, sizeof(conv_params), inception_4c_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4c_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4c_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4b_output, inception_4c_3x3_reduce_w, inception_4c_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_4c_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4c_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4c_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4c_relu_3x3_reduce, inception_4c_3x3_w, inception_4c_3x3_b, &conv_params, sizeof(conv_params), inception_4c_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4c_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4c_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4b_output, inception_4c_5x5_reduce_w, inception_4c_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_4c_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4c_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4c_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4c_relu_5x5_reduce, inception_4c_5x5_w, inception_4c_5x5_b, &conv_params, sizeof(conv_params), inception_4c_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4c_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4c_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4b_output, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_4c_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4c_pool, inception_4c_pool_proj_w, inception_4c_pool_proj_b, &conv_params, sizeof(conv_params), inception_4c_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4c_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4c_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_4c_output, inception_4c_relu_1x1, inception_4c_relu_3x3, inception_4c_relu_5x5, inception_4c_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4c_output, inception_4d_1x1_w, inception_4d_1x1_b, &conv_params, sizeof(conv_params), inception_4d_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4d_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4d_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4c_output, inception_4d_3x3_reduce_w, inception_4d_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_4d_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4d_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4d_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4d_relu_3x3_reduce, inception_4d_3x3_w, inception_4d_3x3_b, &conv_params, sizeof(conv_params), inception_4d_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4d_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4d_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4c_output, inception_4d_5x5_reduce_w, inception_4d_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_4d_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4d_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4d_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4d_relu_5x5_reduce, inception_4d_5x5_w, inception_4d_5x5_b, &conv_params, sizeof(conv_params), inception_4d_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4d_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4d_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4c_output, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_4d_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4d_pool, inception_4d_pool_proj_w, inception_4d_pool_proj_b, &conv_params, sizeof(conv_params), inception_4d_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4d_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4d_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_4d_output, inception_4d_relu_1x1, inception_4d_relu_3x3, inception_4d_relu_5x5, inception_4d_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4d_output, VX_NN_POOLING_AVG, 5, 5, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss2_ave_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, loss2_ave_pool, loss2_conv_w, loss2_conv_b, &conv_params, sizeof(conv_params), loss2_conv);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, loss2_conv, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, loss2_relu_conv);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, loss2_relu_conv, loss2_fc_w, loss2_fc_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss2_fc);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, loss2_fc, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, loss2_relu_fc);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, loss2_relu_fc, loss2_classifier_w, loss2_classifier_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss2_classifier);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxSoftmaxLayer(graph, loss2_classifier, loss2_loss);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4d_output, inception_4e_1x1_w, inception_4e_1x1_b, &conv_params, sizeof(conv_params), inception_4e_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4e_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4e_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4d_output, inception_4e_3x3_reduce_w, inception_4e_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_4e_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4e_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4e_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4e_relu_3x3_reduce, inception_4e_3x3_w, inception_4e_3x3_b, &conv_params, sizeof(conv_params), inception_4e_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4e_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4e_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4d_output, inception_4e_5x5_reduce_w, inception_4e_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_4e_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4e_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4e_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4e_relu_5x5_reduce, inception_4e_5x5_w, inception_4e_5x5_b, &conv_params, sizeof(conv_params), inception_4e_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4e_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4e_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4d_output, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_4e_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_4e_pool, inception_4e_pool_proj_w, inception_4e_pool_proj_b, &conv_params, sizeof(conv_params), inception_4e_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_4e_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_4e_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_4e_output, inception_4e_relu_1x1, inception_4e_relu_3x3, inception_4e_relu_5x5, inception_4e_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_4e_output, VX_NN_POOLING_MAX, 3, 3, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool4_3x3_s2);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool4_3x3_s2, inception_5a_1x1_w, inception_5a_1x1_b, &conv_params, sizeof(conv_params), inception_5a_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5a_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5a_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool4_3x3_s2, inception_5a_3x3_reduce_w, inception_5a_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_5a_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5a_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5a_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5a_relu_3x3_reduce, inception_5a_3x3_w, inception_5a_3x3_b, &conv_params, sizeof(conv_params), inception_5a_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5a_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5a_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool4_3x3_s2, inception_5a_5x5_reduce_w, inception_5a_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_5a_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5a_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5a_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5a_relu_5x5_reduce, inception_5a_5x5_w, inception_5a_5x5_b, &conv_params, sizeof(conv_params), inception_5a_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5a_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5a_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, pool4_3x3_s2, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_5a_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5a_pool, inception_5a_pool_proj_w, inception_5a_pool_proj_b, &conv_params, sizeof(conv_params), inception_5a_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5a_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5a_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_5a_output, inception_5a_relu_1x1, inception_5a_relu_3x3, inception_5a_relu_5x5, inception_5a_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5a_output, inception_5b_1x1_w, inception_5b_1x1_b, &conv_params, sizeof(conv_params), inception_5b_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5b_1x1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5b_relu_1x1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5a_output, inception_5b_3x3_reduce_w, inception_5b_3x3_reduce_b, &conv_params, sizeof(conv_params), inception_5b_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5b_3x3_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5b_relu_3x3_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5b_relu_3x3_reduce, inception_5b_3x3_w, inception_5b_3x3_b, &conv_params, sizeof(conv_params), inception_5b_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5b_3x3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5b_relu_3x3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5a_output, inception_5b_5x5_reduce_w, inception_5b_5x5_reduce_b, &conv_params, sizeof(conv_params), inception_5b_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5b_5x5_reduce, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5b_relu_5x5_reduce);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 2;
+      conv_params.padding_y = 2;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5b_relu_5x5_reduce, inception_5b_5x5_w, inception_5b_5x5_b, &conv_params, sizeof(conv_params), inception_5b_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5b_5x5, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5b_relu_5x5);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_5a_output, VX_NN_POOLING_MAX, 3, 3, 1, 1, VX_ROUND_POLICY_TO_NEAREST_EVEN, inception_5b_pool);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 0;
+      conv_params.padding_y = 0;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, inception_5b_pool, inception_5b_pool_proj_w, inception_5b_pool_proj_b, &conv_params, sizeof(conv_params), inception_5b_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, inception_5b_pool_proj, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, inception_5b_relu_pool_proj);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxConcatLayer(graph, inception_5b_output, inception_5b_relu_1x1, inception_5b_relu_3x3, inception_5b_relu_5x5, inception_5b_relu_pool_proj, NULL, NULL, NULL, NULL);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, inception_5b_output, VX_NN_POOLING_AVG, 7, 7, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool5_7x7_s1);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, pool5_7x7_s1, loss3_classifier_w, loss3_classifier_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, loss3_classifier);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxSoftmaxLayer(graph, loss3_classifier, loss3_loss3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    // release local tensors
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_7x7_s2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_relu_7x7));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool1_3x3_s2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool1_norm1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_norm2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool2_3x3_s2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool3_3x3_s2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_ave_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_conv));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_relu_conv));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_fc));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_relu_fc));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_classifier));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_loss));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_ave_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_conv));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_relu_conv));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_fc));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_relu_fc));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_classifier));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_loss));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool4_3x3_s2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_relu_1x1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_relu_3x3_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_relu_3x3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_relu_5x5_reduce));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_relu_5x5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_pool));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_relu_pool_proj));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_output));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool5_7x7_s1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss3_classifier));
+
+    // release initializer tensors
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_7x7_s2_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_7x7_s2_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3a_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_3b_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4a_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_conv_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_conv_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_fc_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_fc_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_classifier_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss1_classifier_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4b_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4c_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4d_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_conv_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_conv_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_fc_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_fc_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_classifier_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss2_classifier_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_4e_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5a_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_1x1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_1x1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_3x3_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_3x3_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_3x3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_3x3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_5x5_reduce_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_5x5_reduce_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_5x5_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_5x5_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_pool_proj_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&inception_5b_pool_proj_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss3_classifier_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&loss3_classifier_b));
+
+    return VX_SUCCESS;
+}
