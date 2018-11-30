@@ -35,5 +35,6 @@ extern "C" VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_vgg(vx_graph graph, 
 extern "C" VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_googleNet(vx_graph graph, vx_tensor data, vx_tensor loss3_loss3, const char * binaryFilename);
 extern "C" VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_resnet101(vx_graph graph, vx_tensor data, vx_tensor prob, const char * binaryFilename);
 extern "C" VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_resnet152(vx_graph graph, vx_tensor data, vx_tensor prob, const char * binaryFilename);
+extern "C" VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_vgg19(vx_graph graph, vx_tensor data, vx_tensor prob, const char * binaryFilename);
 
 #endif

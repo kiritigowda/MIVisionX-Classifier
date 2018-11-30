@@ -32574,3 +32574,769 @@ VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_resnet152(vx_graph graph, vx_te
 
     return VX_SUCCESS;
 }
+
+VX_API_ENTRY vx_status VX_API_CALL annAddToGraph_vgg19(vx_graph graph, vx_tensor data, vx_tensor prob, const char * binaryFilename)
+{
+    vx_context context = vxGetContext((vx_reference)graph);
+    ERROR_CHECK_OBJECT(context);
+
+    // create variables
+    vx_size dims_conv1_1_w[4] = { 3, 3, 3, 64 };
+    vx_tensor conv1_1_w = vxCreateTensor(context, 4, dims_conv1_1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_1_w);
+    vx_size dims_conv1_1_b[2] = { 64, 1 };
+    vx_tensor conv1_1_b = vxCreateTensor(context, 2, dims_conv1_1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_1_b);
+    vx_size dims_conv1_2_w[4] = { 3, 3, 64, 64 };
+    vx_tensor conv1_2_w = vxCreateTensor(context, 4, dims_conv1_2_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_2_w);
+    vx_size dims_conv1_2_b[2] = { 64, 1 };
+    vx_tensor conv1_2_b = vxCreateTensor(context, 2, dims_conv1_2_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_2_b);
+    vx_size dims_conv2_1_w[4] = { 3, 3, 64, 128 };
+    vx_tensor conv2_1_w = vxCreateTensor(context, 4, dims_conv2_1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_1_w);
+    vx_size dims_conv2_1_b[2] = { 128, 1 };
+    vx_tensor conv2_1_b = vxCreateTensor(context, 2, dims_conv2_1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_1_b);
+    vx_size dims_conv2_2_w[4] = { 3, 3, 128, 128 };
+    vx_tensor conv2_2_w = vxCreateTensor(context, 4, dims_conv2_2_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_2_w);
+    vx_size dims_conv2_2_b[2] = { 128, 1 };
+    vx_tensor conv2_2_b = vxCreateTensor(context, 2, dims_conv2_2_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_2_b);
+    vx_size dims_conv3_1_w[4] = { 3, 3, 128, 256 };
+    vx_tensor conv3_1_w = vxCreateTensor(context, 4, dims_conv3_1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_1_w);
+    vx_size dims_conv3_1_b[2] = { 256, 1 };
+    vx_tensor conv3_1_b = vxCreateTensor(context, 2, dims_conv3_1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_1_b);
+    vx_size dims_conv3_2_w[4] = { 3, 3, 256, 256 };
+    vx_tensor conv3_2_w = vxCreateTensor(context, 4, dims_conv3_2_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_2_w);
+    vx_size dims_conv3_2_b[2] = { 256, 1 };
+    vx_tensor conv3_2_b = vxCreateTensor(context, 2, dims_conv3_2_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_2_b);
+    vx_size dims_conv3_3_w[4] = { 3, 3, 256, 256 };
+    vx_tensor conv3_3_w = vxCreateTensor(context, 4, dims_conv3_3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_3_w);
+    vx_size dims_conv3_3_b[2] = { 256, 1 };
+    vx_tensor conv3_3_b = vxCreateTensor(context, 2, dims_conv3_3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_3_b);
+    vx_size dims_conv3_4_w[4] = { 3, 3, 256, 256 };
+    vx_tensor conv3_4_w = vxCreateTensor(context, 4, dims_conv3_4_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_4_w);
+    vx_size dims_conv3_4_b[2] = { 256, 1 };
+    vx_tensor conv3_4_b = vxCreateTensor(context, 2, dims_conv3_4_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_4_b);
+    vx_size dims_conv4_1_w[4] = { 3, 3, 256, 512 };
+    vx_tensor conv4_1_w = vxCreateTensor(context, 4, dims_conv4_1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_1_w);
+    vx_size dims_conv4_1_b[2] = { 512, 1 };
+    vx_tensor conv4_1_b = vxCreateTensor(context, 2, dims_conv4_1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_1_b);
+    vx_size dims_conv4_2_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv4_2_w = vxCreateTensor(context, 4, dims_conv4_2_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_2_w);
+    vx_size dims_conv4_2_b[2] = { 512, 1 };
+    vx_tensor conv4_2_b = vxCreateTensor(context, 2, dims_conv4_2_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_2_b);
+    vx_size dims_conv4_3_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv4_3_w = vxCreateTensor(context, 4, dims_conv4_3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_3_w);
+    vx_size dims_conv4_3_b[2] = { 512, 1 };
+    vx_tensor conv4_3_b = vxCreateTensor(context, 2, dims_conv4_3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_3_b);
+    vx_size dims_conv4_4_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv4_4_w = vxCreateTensor(context, 4, dims_conv4_4_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_4_w);
+    vx_size dims_conv4_4_b[2] = { 512, 1 };
+    vx_tensor conv4_4_b = vxCreateTensor(context, 2, dims_conv4_4_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_4_b);
+    vx_size dims_conv5_1_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv5_1_w = vxCreateTensor(context, 4, dims_conv5_1_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_1_w);
+    vx_size dims_conv5_1_b[2] = { 512, 1 };
+    vx_tensor conv5_1_b = vxCreateTensor(context, 2, dims_conv5_1_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_1_b);
+    vx_size dims_conv5_2_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv5_2_w = vxCreateTensor(context, 4, dims_conv5_2_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_2_w);
+    vx_size dims_conv5_2_b[2] = { 512, 1 };
+    vx_tensor conv5_2_b = vxCreateTensor(context, 2, dims_conv5_2_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_2_b);
+    vx_size dims_conv5_3_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv5_3_w = vxCreateTensor(context, 4, dims_conv5_3_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_3_w);
+    vx_size dims_conv5_3_b[2] = { 512, 1 };
+    vx_tensor conv5_3_b = vxCreateTensor(context, 2, dims_conv5_3_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_3_b);
+    vx_size dims_conv5_4_w[4] = { 3, 3, 512, 512 };
+    vx_tensor conv5_4_w = vxCreateTensor(context, 4, dims_conv5_4_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_4_w);
+    vx_size dims_conv5_4_b[2] = { 512, 1 };
+    vx_tensor conv5_4_b = vxCreateTensor(context, 2, dims_conv5_4_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_4_b);
+    vx_size dims_fc6_w[4] = { 7, 7, 512, 4096 };
+    vx_tensor fc6_w = vxCreateTensor(context, 4, dims_fc6_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc6_w);
+    vx_size dims_fc6_b[2] = { 4096, 1 };
+    vx_tensor fc6_b = vxCreateTensor(context, 2, dims_fc6_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc6_b);
+    vx_size dims_fc7_w[4] = { 1, 1, 4096, 4096 };
+    vx_tensor fc7_w = vxCreateTensor(context, 4, dims_fc7_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc7_w);
+    vx_size dims_fc7_b[2] = { 4096, 1 };
+    vx_tensor fc7_b = vxCreateTensor(context, 2, dims_fc7_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc7_b);
+    vx_size dims_fc8_w[4] = { 1, 1, 4096, 1000 };
+    vx_tensor fc8_w = vxCreateTensor(context, 4, dims_fc8_w, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc8_w);
+    vx_size dims_fc8_b[2] = { 1000, 1 };
+    vx_tensor fc8_b = vxCreateTensor(context, 2, dims_fc8_b, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc8_b);
+
+    // initialize variables
+    FILE * fp__variables = fopen(binaryFilename, "rb");
+    if(!fp__variables) {
+        vxAddLogEntry((vx_reference)context, VX_FAILURE, "ERROR: unable to open: %s\n", binaryFilename);
+        return VX_FAILURE;
+    }
+    { vx_uint32 magic = 0;
+      fread(&magic, 1, sizeof(magic), fp__variables);
+      if(magic != 0xf00dd1e0) {
+        vxAddLogEntry((vx_reference)context, VX_FAILURE, "ERROR: invalid file magic in %s\n", binaryFilename);
+        return VX_FAILURE;
+      }
+    }
+    ERROR_CHECK_STATUS(initializeTensor(context, conv1_1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv1_1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv1_2_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv1_2_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_2_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv2_2_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_2_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_2_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_4_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv3_4_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_2_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_2_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_4_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv4_4_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_1_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_1_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_2_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_2_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_3_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_3_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_4_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, conv5_4_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, fc6_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, fc6_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, fc7_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, fc7_b, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, fc8_w, fp__variables, binaryFilename));
+    ERROR_CHECK_STATUS(initializeTensor(context, fc8_b, fp__variables, binaryFilename));
+    { vx_uint32 magic = 0;
+      fread(&magic, 1, sizeof(magic), fp__variables);
+      if(magic != 0xf00dd1e2) {
+        vxAddLogEntry((vx_reference)context, VX_FAILURE, "ERROR: invalid eoff magic in %s\n", binaryFilename);
+        return VX_FAILURE;
+      }
+      fclose(fp__variables);
+    }
+
+    // create local tensors used in graph
+    vx_size dims_conv1_1[4] = { 224, 224, 64, 1 };
+    vx_tensor conv1_1 = vxCreateVirtualTensor(graph, 4, dims_conv1_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_1);
+    vx_size dims_relu1_1[4] = { 224, 224, 64, 1 };
+    vx_tensor relu1_1 = vxCreateVirtualTensor(graph, 4, dims_relu1_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu1_1);
+    vx_size dims_conv1_2[4] = { 224, 224, 64, 1 };
+    vx_tensor conv1_2 = vxCreateVirtualTensor(graph, 4, dims_conv1_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv1_2);
+    vx_size dims_relu1_2[4] = { 224, 224, 64, 1 };
+    vx_tensor relu1_2 = vxCreateVirtualTensor(graph, 4, dims_relu1_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu1_2);
+    vx_size dims_pool1[4] = { 112, 112, 64, 1 };
+    vx_tensor pool1 = vxCreateVirtualTensor(graph, 4, dims_pool1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool1);
+    vx_size dims_conv2_1[4] = { 112, 112, 128, 1 };
+    vx_tensor conv2_1 = vxCreateVirtualTensor(graph, 4, dims_conv2_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_1);
+    vx_size dims_relu2_1[4] = { 112, 112, 128, 1 };
+    vx_tensor relu2_1 = vxCreateVirtualTensor(graph, 4, dims_relu2_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu2_1);
+    vx_size dims_conv2_2[4] = { 112, 112, 128, 1 };
+    vx_tensor conv2_2 = vxCreateVirtualTensor(graph, 4, dims_conv2_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv2_2);
+    vx_size dims_relu2_2[4] = { 112, 112, 128, 1 };
+    vx_tensor relu2_2 = vxCreateVirtualTensor(graph, 4, dims_relu2_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu2_2);
+    vx_size dims_pool2[4] = { 56, 56, 128, 1 };
+    vx_tensor pool2 = vxCreateVirtualTensor(graph, 4, dims_pool2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool2);
+    vx_size dims_conv3_1[4] = { 56, 56, 256, 1 };
+    vx_tensor conv3_1 = vxCreateVirtualTensor(graph, 4, dims_conv3_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_1);
+    vx_size dims_relu3_1[4] = { 56, 56, 256, 1 };
+    vx_tensor relu3_1 = vxCreateVirtualTensor(graph, 4, dims_relu3_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu3_1);
+    vx_size dims_conv3_2[4] = { 56, 56, 256, 1 };
+    vx_tensor conv3_2 = vxCreateVirtualTensor(graph, 4, dims_conv3_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_2);
+    vx_size dims_relu3_2[4] = { 56, 56, 256, 1 };
+    vx_tensor relu3_2 = vxCreateVirtualTensor(graph, 4, dims_relu3_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu3_2);
+    vx_size dims_conv3_3[4] = { 56, 56, 256, 1 };
+    vx_tensor conv3_3 = vxCreateVirtualTensor(graph, 4, dims_conv3_3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_3);
+    vx_size dims_relu3_3[4] = { 56, 56, 256, 1 };
+    vx_tensor relu3_3 = vxCreateVirtualTensor(graph, 4, dims_relu3_3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu3_3);
+    vx_size dims_conv3_4[4] = { 56, 56, 256, 1 };
+    vx_tensor conv3_4 = vxCreateVirtualTensor(graph, 4, dims_conv3_4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv3_4);
+    vx_size dims_relu3_4[4] = { 56, 56, 256, 1 };
+    vx_tensor relu3_4 = vxCreateVirtualTensor(graph, 4, dims_relu3_4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu3_4);
+    vx_size dims_pool3[4] = { 28, 28, 256, 1 };
+    vx_tensor pool3 = vxCreateVirtualTensor(graph, 4, dims_pool3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool3);
+    vx_size dims_conv4_1[4] = { 28, 28, 512, 1 };
+    vx_tensor conv4_1 = vxCreateVirtualTensor(graph, 4, dims_conv4_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_1);
+    vx_size dims_relu4_1[4] = { 28, 28, 512, 1 };
+    vx_tensor relu4_1 = vxCreateVirtualTensor(graph, 4, dims_relu4_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu4_1);
+    vx_size dims_conv4_2[4] = { 28, 28, 512, 1 };
+    vx_tensor conv4_2 = vxCreateVirtualTensor(graph, 4, dims_conv4_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_2);
+    vx_size dims_relu4_2[4] = { 28, 28, 512, 1 };
+    vx_tensor relu4_2 = vxCreateVirtualTensor(graph, 4, dims_relu4_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu4_2);
+    vx_size dims_conv4_3[4] = { 28, 28, 512, 1 };
+    vx_tensor conv4_3 = vxCreateVirtualTensor(graph, 4, dims_conv4_3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_3);
+    vx_size dims_relu4_3[4] = { 28, 28, 512, 1 };
+    vx_tensor relu4_3 = vxCreateVirtualTensor(graph, 4, dims_relu4_3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu4_3);
+    vx_size dims_conv4_4[4] = { 28, 28, 512, 1 };
+    vx_tensor conv4_4 = vxCreateVirtualTensor(graph, 4, dims_conv4_4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv4_4);
+    vx_size dims_relu4_4[4] = { 28, 28, 512, 1 };
+    vx_tensor relu4_4 = vxCreateVirtualTensor(graph, 4, dims_relu4_4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu4_4);
+    vx_size dims_pool4[4] = { 14, 14, 512, 1 };
+    vx_tensor pool4 = vxCreateVirtualTensor(graph, 4, dims_pool4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool4);
+    vx_size dims_conv5_1[4] = { 14, 14, 512, 1 };
+    vx_tensor conv5_1 = vxCreateVirtualTensor(graph, 4, dims_conv5_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_1);
+    vx_size dims_relu5_1[4] = { 14, 14, 512, 1 };
+    vx_tensor relu5_1 = vxCreateVirtualTensor(graph, 4, dims_relu5_1, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu5_1);
+    vx_size dims_conv5_2[4] = { 14, 14, 512, 1 };
+    vx_tensor conv5_2 = vxCreateVirtualTensor(graph, 4, dims_conv5_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_2);
+    vx_size dims_relu5_2[4] = { 14, 14, 512, 1 };
+    vx_tensor relu5_2 = vxCreateVirtualTensor(graph, 4, dims_relu5_2, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu5_2);
+    vx_size dims_conv5_3[4] = { 14, 14, 512, 1 };
+    vx_tensor conv5_3 = vxCreateVirtualTensor(graph, 4, dims_conv5_3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_3);
+    vx_size dims_relu5_3[4] = { 14, 14, 512, 1 };
+    vx_tensor relu5_3 = vxCreateVirtualTensor(graph, 4, dims_relu5_3, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu5_3);
+    vx_size dims_conv5_4[4] = { 14, 14, 512, 1 };
+    vx_tensor conv5_4 = vxCreateVirtualTensor(graph, 4, dims_conv5_4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(conv5_4);
+    vx_size dims_relu5_4[4] = { 14, 14, 512, 1 };
+    vx_tensor relu5_4 = vxCreateVirtualTensor(graph, 4, dims_relu5_4, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu5_4);
+    vx_size dims_pool5[4] = { 7, 7, 512, 1 };
+    vx_tensor pool5 = vxCreateVirtualTensor(graph, 4, dims_pool5, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(pool5);
+    vx_size dims_fc6[4] = { 1, 1, 4096, 1 };
+    vx_tensor fc6 = vxCreateVirtualTensor(graph, 4, dims_fc6, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc6);
+    vx_size dims_relu6[4] = { 1, 1, 4096, 1 };
+    vx_tensor relu6 = vxCreateVirtualTensor(graph, 4, dims_relu6, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu6);
+    vx_size dims_fc7[4] = { 1, 1, 4096, 1 };
+    vx_tensor fc7 = vxCreateVirtualTensor(graph, 4, dims_fc7, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc7);
+    vx_size dims_relu7[4] = { 1, 1, 4096, 1 };
+    vx_tensor relu7 = vxCreateVirtualTensor(graph, 4, dims_relu7, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(relu7);
+    vx_size dims_fc8[4] = { 1, 1, 1000, 1 };
+    vx_tensor fc8 = vxCreateVirtualTensor(graph, 4, dims_fc8, VX_TYPE_FLOAT32, 0);
+    ERROR_CHECK_OBJECT(fc8);
+
+    // create nodes in graph
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, data, conv1_1_w, conv1_1_b, &conv_params, sizeof(conv_params), conv1_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv1_1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu1_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu1_1, conv1_2_w, conv1_2_b, &conv_params, sizeof(conv_params), conv1_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv1_2, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu1_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, relu1_2, VX_NN_POOLING_MAX, 2, 2, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool1);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool1, conv2_1_w, conv2_1_b, &conv_params, sizeof(conv_params), conv2_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv2_1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu2_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu2_1, conv2_2_w, conv2_2_b, &conv_params, sizeof(conv_params), conv2_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv2_2, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu2_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, relu2_2, VX_NN_POOLING_MAX, 2, 2, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool2);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool2, conv3_1_w, conv3_1_b, &conv_params, sizeof(conv_params), conv3_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv3_1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu3_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu3_1, conv3_2_w, conv3_2_b, &conv_params, sizeof(conv_params), conv3_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv3_2, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu3_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu3_2, conv3_3_w, conv3_3_b, &conv_params, sizeof(conv_params), conv3_3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv3_3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu3_3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu3_3, conv3_4_w, conv3_4_b, &conv_params, sizeof(conv_params), conv3_4);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv3_4, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu3_4);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, relu3_4, VX_NN_POOLING_MAX, 2, 2, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool3);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool3, conv4_1_w, conv4_1_b, &conv_params, sizeof(conv_params), conv4_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv4_1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu4_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu4_1, conv4_2_w, conv4_2_b, &conv_params, sizeof(conv_params), conv4_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv4_2, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu4_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu4_2, conv4_3_w, conv4_3_b, &conv_params, sizeof(conv_params), conv4_3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv4_3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu4_3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu4_3, conv4_4_w, conv4_4_b, &conv_params, sizeof(conv_params), conv4_4);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv4_4, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu4_4);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, relu4_4, VX_NN_POOLING_MAX, 2, 2, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool4);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, pool4, conv5_1_w, conv5_1_b, &conv_params, sizeof(conv_params), conv5_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv5_1, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu5_1);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu5_1, conv5_2_w, conv5_2_b, &conv_params, sizeof(conv_params), conv5_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv5_2, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu5_2);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu5_2, conv5_3_w, conv5_3_b, &conv_params, sizeof(conv_params), conv5_3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv5_3, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu5_3);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_nn_convolution_params_t conv_params = { 0 };
+      conv_params.padding_x = 1;
+      conv_params.padding_y = 1;
+      conv_params.overflow_policy = VX_CONVERT_POLICY_SATURATE;
+      conv_params.rounding_policy = VX_ROUND_POLICY_TO_NEAREST_EVEN;
+      conv_params.down_scale_size_rounding = VX_NN_DS_SIZE_ROUNDING_FLOOR;
+      conv_params.dilation_x = 0;
+      conv_params.dilation_y = 0;
+      vx_node node = vxConvolutionLayer(graph, relu5_3, conv5_4_w, conv5_4_b, &conv_params, sizeof(conv_params), conv5_4);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, conv5_4, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu5_4);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxPoolingLayer(graph, relu5_4, VX_NN_POOLING_MAX, 2, 2, 0, 0, VX_ROUND_POLICY_TO_NEAREST_EVEN, pool5);
+      ERROR_CHECK_OBJECT(node);
+      vx_enum border_mode = 0;
+      vx_scalar s_border_mode = vxCreateScalarWithSize(context, VX_TYPE_ENUM, &border_mode, sizeof(border_mode));
+      ERROR_CHECK_OBJECT(s_border_mode);
+      ERROR_CHECK_STATUS(vxSetParameterByIndex(node, 8, (vx_reference) s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseScalar(&s_border_mode));
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, pool5, fc6_w, fc6_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, fc6);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, fc6, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu6);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, relu6, fc7_w, fc7_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, fc7);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxActivationLayer(graph, fc7, VX_NN_ACTIVATION_RELU, 0.0f, 0.0f, relu7);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxFullyConnectedLayer(graph, relu7, fc8_w, fc8_b, VX_CONVERT_POLICY_SATURATE, VX_ROUND_POLICY_TO_NEAREST_EVEN, fc8);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    { vx_node node = vxSoftmaxLayer(graph, fc8, prob);
+      ERROR_CHECK_OBJECT(node);
+      ERROR_CHECK_STATUS(vxReleaseNode(&node));
+    }
+
+    // release local tensors
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu1_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu1_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu2_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu2_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu3_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu3_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu3_3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu3_4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu4_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu4_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu4_3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu4_4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu5_1));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu5_2));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu5_3));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu5_4));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&pool5));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc6));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu6));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc7));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&relu7));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc8));
+
+    // release initializer tensors
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_2_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv1_2_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_2_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv2_2_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_2_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_2_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_4_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv3_4_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_2_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_2_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_4_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv4_4_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_1_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_1_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_2_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_2_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_3_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_3_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_4_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&conv5_4_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc6_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc6_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc7_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc7_b));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc8_w));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&fc8_b));
+
+    return VX_SUCCESS;
+}
