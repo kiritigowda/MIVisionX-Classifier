@@ -231,11 +231,11 @@ inline int64_t clockFrequency()
 int main(int argc, const char ** argv)
 {
     // check command-line usage
-    if(argc < 5) {
+    if(argc < 7) {
         printf(
             "\n"
             "Usage: anntest <inception weights.bin> <resnet weights.bin> <vgg weights.bin> <googlenet weights.bin> "
-            "<resnet101 weights.bin>[ --label <label text> <--video file>/<--capture 0> ] \n"
+            "<resnet101 weights.bin> <resnet152 weights.bin> [ --label <label text> <--video file>/<--capture 0> ] \n"
             "\n"
         );
         return -1;
@@ -245,9 +245,10 @@ int main(int argc, const char ** argv)
     const char * binaryFilename_vgg = argv[3];
     const char * binaryFilename_googlenet = argv[4];
     const char * binaryFilename_resnet101 = argv[5];
+    const char * binaryFilename_resnet152 = argv[6];
 
-    argc -= 6;
-    argv += 6;
+    argc -= 7;
+    argv += 7;
 
     std::string videoFile = "empty";
     std::string labelFileName = "empty";
@@ -324,6 +325,12 @@ int main(int argc, const char ** argv)
         printf("ERROR: vxCreateGraph(...) failed (%d)\n", status);
         return -1;
     }
+    vx_graph graph_resnet152 = vxCreateGraph(context);
+    status = vxGetStatus((vx_reference)graph_resnet152);
+    if(status) {
+        printf("ERROR: vxCreateGraph(...) failed (%d)\n", status);
+        return -1;
+    }
 
     // create and initialize input tensor data
     vx_size dims_data_inception[4] = { 299, 299, 3, 1 };
@@ -354,6 +361,11 @@ int main(int argc, const char ** argv)
         printf("ERROR: vxCreateTensor() failed for data\n");
         return -1;
     }
+    vx_tensor data_resnet152 = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
+    if(vxGetStatus((vx_reference)data_resnet152)) {
+        printf("ERROR: vxCreateTensor() failed for data\n");
+        return -1;
+    }
 
     // create output tensor prob
     vx_size dims_prob[4] = { 1, 1, 1000, 1 };
@@ -378,7 +390,12 @@ int main(int argc, const char ** argv)
         return -1;
     }
     vx_tensor prob_resnet101 = vxCreateTensor(context, 4, dims_prob, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)prob_resnet)) {
+    if(vxGetStatus((vx_reference)prob_resnet101)) {
+        printf("ERROR: vxCreateTensor() failed for prob\n");
+        return -1;
+    }
+    vx_tensor prob_resnet152 = vxCreateTensor(context, 4, dims_prob, VX_TYPE_FLOAT32, 0);
+    if(vxGetStatus((vx_reference)prob_resnet152)) {
         printf("ERROR: vxCreateTensor() failed for prob\n");
         return -1;
     }
@@ -442,6 +459,17 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
+    status = annAddToGraph_resnet152(graph_resnet152, data_resnet152, prob_resnet152, binaryFilename_resnet152);
+    if(status) {
+        printf("ERROR: resnet annAddToGraph() failed (%d)\n", status);
+        return -1;
+    }
+    status = vxVerifyGraph(graph_resnet152);
+    if(status) {
+        printf("ERROR: resnet vxVerifyGraph(...) failed (%d)\n", status);
+        return -1;
+    }
+
     t1 = clockCounter();
     printf("OK: graph initialization with annAddToGraph() took %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
 
@@ -471,11 +499,16 @@ int main(int argc, const char ** argv)
         printf("ERROR: vxProcessGraph() failed (%d)\n", status);
         return -1;
     }
+    status = vxProcessGraph(graph_resnet152);
+    if(status != VX_SUCCESS) {
+        printf("ERROR: vxProcessGraph() failed (%d)\n", status);
+        return -1;
+    }
     t1 = clockCounter();
     printf("OK: vxProcessGraph() took %.3f msec (1st iteration)\n", (float)(t1-t0)*1000.0f/(float)freq);
 
     int N = 100;
-    float inceptionV4Time, resnet50Time, vgg16Time, googlenetTime, resnet101Time;
+    float inceptionV4Time, resnet50Time, vgg16Time, googlenetTime, resnet101Time, resnet152Time;
     t0 = clockCounter();
     for(int i = 0; i < N; i++) {
         status = vxProcessGraph(graph_inception);
@@ -521,6 +554,15 @@ int main(int argc, const char ** argv)
     t1 = clockCounter();
     resnet101Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
     printf("OK: resnet101 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
+    t0 = clockCounter();
+    for(int i = 0; i < N; i++) {
+        status = vxProcessGraph(graph_resnet152);
+        if(status != VX_SUCCESS)
+            break;
+    }
+    t1 = clockCounter();
+    resnet152Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
+    printf("OK: resnet152 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
     
     /***** OPENCV Additions *****/
 
@@ -536,11 +578,11 @@ int main(int argc, const char ** argv)
     // create display legend image
     runInception = true; runResnet50 = true; runVgg16 = true;
     runGooglenet = true; runResnet101 = true; 
-    runResnet152 = false; runVgg19 = false;
+    runResnet152 = true; runVgg19 = false;
     inceptionV4Time_g = inceptionV4Time; resnet50Time_g = resnet50Time;
-    vgg16Time_g = resnet101Time;
-    vgg16Time; googlenetTime_g = googlenetTime;
-    resnet101Time_g = resnet152Time_g = vgg19Time_g = 0;
+    vgg16Time_g = vgg16Time; resnet101Time_g =  resnet101Time;
+    googlenetTime_g = googlenetTime; resnet152Time_g = resnet152Time;
+    vgg19Time_g = 0;
     createLegendImage();
 
     // define variables for run
@@ -557,8 +599,8 @@ int main(int argc, const char ** argv)
     int fontFace = CV_FONT_HERSHEY_DUPLEX;
     double fontScale = 1;
     int thickness = 1.5;
-    float *outputBuffer[5];
-    for(int models = 0; models < 5; models++){
+    float *outputBuffer[6];
+    for(int models = 0; models < 6; models++){
         outputBuffer[models] = new float[total_size];
     }
 
@@ -784,6 +826,43 @@ int main(int argc, const char ** argv)
                     return -1;
                 }
             }
+            // resnet 152 copy
+            if(runResnet152)
+            {
+                vxQueryTensor(data_resnet152, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
+                vxQueryTensor(data_resnet152, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
+                vxQueryTensor(data_resnet152, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
+                if(data_type != VX_TYPE_FLOAT32) {
+                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
+                    return -1;
+                }
+                count = dims[0] * dims[1] * dims[2] * dims[3];
+                vx_status status = vxMapTensorPatch(data_resnet152, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
+                if(status) {
+                    std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
+                    return -1;
+                }
+                Mat srcImg;
+                for(size_t n = 0; n < dims[3]; n++) {
+                    srcImg = inputFrame_other;
+                    for(vx_size y = 0; y < dims[1]; y++) {
+                        unsigned char * src = srcImg.data + y*dims[0]*3;
+                        float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
+                        float * dstG = dstR + (stride[2] >> 2);
+                        float * dstB = dstG + (stride[2] >> 2);
+                        for(vx_size x = 0; x < dims[0]; x++, src += 3) {
+                            *dstR++ = src[2];
+                            *dstG++ = src[1];
+                            *dstB++ = src[0];
+                        }
+                    }
+                }
+                status = vxUnmapTensorPatch(data_resnet152, map_id);
+                if(status) {
+                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
+                    return -1;
+                }
+            }
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: Convert Image to Tensor Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
@@ -837,7 +916,17 @@ int main(int argc, const char ** argv)
                 t1 = clockCounter();
                 resnet101Time_g = (float)(t1-t0)*1000.0f/(float)freq;
                 msFrame += (float)(t1-t0)*1000.0f/(float)freq;
-                //printf("LIVE: Process Resnet50 Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+                //printf("LIVE: Process Resnet101 Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
+            }
+            if(runResnet152)
+            {
+                t0 = clockCounter();
+                status = vxProcessGraph(graph_resnet152);
+                if(status != VX_SUCCESS) break;
+                t1 = clockCounter();
+                resnet152Time_g = (float)(t1-t0)*1000.0f/(float)freq;
+                msFrame += (float)(t1-t0)*1000.0f/(float)freq;
+                //printf("LIVE: Process Resnet152 Classification Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
             }
 
             // copy output data into local buffer
@@ -935,7 +1024,7 @@ int main(int argc, const char ** argv)
                     return -1;
                 }
             }
-            // resnet copy
+            // resnet 101 copy
             if(runResnet101)
             {
                 vxQueryTensor(prob_resnet101, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
@@ -958,6 +1047,29 @@ int main(int argc, const char ** argv)
                     return -1;
                 }
             }
+            // resnet 152 copy
+            if(runResnet152)
+            {
+                vxQueryTensor(prob_resnet152, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
+                vxQueryTensor(prob_resnet152, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
+                vxQueryTensor(prob_resnet152, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
+                if(data_type != VX_TYPE_FLOAT32) {
+                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for "  << std::endl;
+                    return -1;
+                }
+                count = dims[0] * dims[1] * dims[2] * dims[3];
+                status = vxMapTensorPatch(prob_resnet152, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
+                if(status) {
+                    std::cerr << "ERROR: vxMapTensorPatch() failed for "  << std::endl;
+                    return -1;
+                }
+                memcpy(outputBuffer[5], ptr, (count*sizeof(float)));
+                status = vxUnmapTensorPatch(prob_resnet152, map_id);
+                if(status) {
+                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for "  << std::endl;
+                    return -1;
+                }
+            }
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: Copy probability Output Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
@@ -966,7 +1078,7 @@ int main(int argc, const char ** argv)
             t0 = clockCounter();
             threshold = (float)thresholdValue;
             const int N = 1000;
-            int inceptionID, resnetID, vggID, googlenetID, resnet101ID;
+            int inceptionID, resnetID, vggID, googlenetID, resnet101ID, resnet152ID;
             if(runInception)
             {
                 inceptionID = std::distance(outputBuffer[0], std::max_element(outputBuffer[0], outputBuffer[0] + N));
@@ -985,7 +1097,11 @@ int main(int argc, const char ** argv)
             }
             if(runResnet101)
             {
-                resnetID = std::distance(outputBuffer[4], std::max_element(outputBuffer[4], outputBuffer[4] + N));
+                resnet101ID = std::distance(outputBuffer[4], std::max_element(outputBuffer[4], outputBuffer[4] + N));
+            }
+            if(runResnet152)
+            {
+                resnet152ID = std::distance(outputBuffer[5], std::max_element(outputBuffer[5], outputBuffer[5] + N));
             }
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
@@ -1000,18 +1116,21 @@ int main(int argc, const char ** argv)
             std::string modelName3 = "VGG16 - ";
             std::string modelName4 = "GoogleNet - ";
             std::string modelName5 = "Resnet101 - ";
+            std::string modelName6 = "Resnet152 - ";
             std::string inceptionText = "Unclassified", resnetText = "Unclassified", vggText = "Unclassified", googlenetText = "Unclassified";
-            std::string resnet101Text = "Unclassified";
+            std::string resnet101Text = "Unclassified", resnet152Text = "Unclassified";
             if(outputBuffer[0][inceptionID] >= threshold){ inceptionText = labelText[inceptionID]; }
             if(outputBuffer[1][resnetID] >= threshold){ resnetText = labelText[resnetID]; }
             if(outputBuffer[2][vggID] >= threshold){ vggText = labelText[vggID]; }
             if(outputBuffer[3][googlenetID] >= threshold){ googlenetText = labelText[googlenetID]; }
             if(outputBuffer[4][resnet101ID] >= threshold){ resnet101Text = labelText[resnet101ID]; }
+            if(outputBuffer[5][resnet152ID] >= threshold){ resnet152Text = labelText[resnet152ID]; }
             modelName1 = modelName1 + inceptionText;
             modelName2 = modelName2 + resnetText;
             modelName3 = modelName3 + vggText;
             modelName4 = modelName4 + googlenetText;
             modelName5 = modelName5 + resnet101Text;
+            modelName6 = modelName6 + resnet152Text;
             int red, green, blue;
             if(runInception)
             {
@@ -1041,6 +1160,12 @@ int main(int argc, const char ** argv)
             {
                 red = (colors[4][2]); green = (colors[4][1]); blue = (colors[4][0]) ;
                 putText(outputDisplay, modelName5, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(red,green,blue), thickness,8);
+                l++;
+            }
+            if(runResnet152)
+            {
+                red = (colors[5][2]); green = (colors[5][1]); blue = (colors[5][0]) ;
+                putText(outputDisplay, modelName6, Point(20, (l * 40) + 30), fontFace, fontScale, Scalar(red,green,blue), thickness,8);
                 l++;
             }
             t1 = clockCounter();
