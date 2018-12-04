@@ -340,41 +340,17 @@ int main(int argc, const char ** argv)
     }
 
     // create and initialize input tensor data
-    vx_size dims_data_inception[4] = { 299, 299, 3, 1 };
-    vx_size dims_data_others[4] = { 224, 224, 3, 1 };
+    vx_size dims_data_299x299[4] = { 299, 299, 3, 1 };
+    vx_size dims_data_224x224[4] = { 224, 224, 3, 1 };
 
-    vx_tensor data_inception = vxCreateTensor(context, 4, dims_data_inception, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_inception)) {
+    // create data for different sizes
+    vx_tensor data_299x299 = vxCreateTensor(context, 4, dims_data_299x299, VX_TYPE_FLOAT32, 0);
+    if(vxGetStatus((vx_reference)data_299x299)) {
         printf("ERROR: vxCreateTensor() failed for data\n");
         return -1;
     }
-    vx_tensor data_resnet = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_resnet)) {
-        printf("ERROR: vxCreateTensor() failed for data\n");
-        return -1;
-    }
-    vx_tensor data_vgg = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_vgg)) {
-        printf("ERROR: vxCreateTensor() failed for data\n");
-        return -1;
-    }
-    vx_tensor data_googlenet = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_googlenet)) {
-        printf("ERROR: vxCreateTensor() failed for data\n");
-        return -1;
-    }
-    vx_tensor data_resnet101 = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_resnet101)) {
-        printf("ERROR: vxCreateTensor() failed for data\n");
-        return -1;
-    }
-    vx_tensor data_resnet152 = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_resnet152)) {
-        printf("ERROR: vxCreateTensor() failed for data\n");
-        return -1;
-    }
-    vx_tensor data_vgg19 = vxCreateTensor(context, 4, dims_data_others, VX_TYPE_FLOAT32, 0);
-    if(vxGetStatus((vx_reference)data_vgg19)) {
+    vx_tensor data_224x224 = vxCreateTensor(context, 4, dims_data_224x224, VX_TYPE_FLOAT32, 0);
+    if(vxGetStatus((vx_reference)data_224x224)) {
         printf("ERROR: vxCreateTensor() failed for data\n");
         return -1;
     }
@@ -421,7 +397,7 @@ int main(int argc, const char ** argv)
     int64_t freq = clockFrequency(), t0, t1;
     t0 = clockCounter();
 
-    status = annAddToGraph_inception(graph_inception, data_inception, prob_inception, binaryFilename_inception);
+    status = annAddToGraph_inception(graph_inception, data_299x299, prob_inception, binaryFilename_inception);
     if(status) {
         printf("ERROR: inception annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -432,7 +408,7 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
-    status = annAddToGraph_resnet(graph_resnet, data_resnet, prob_resnet, binaryFilename_resnet);
+    status = annAddToGraph_resnet(graph_resnet, data_224x224, prob_resnet, binaryFilename_resnet);
     if(status) {
         printf("ERROR: resnet annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -443,7 +419,7 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
-    status = annAddToGraph_vgg(graph_vgg, data_vgg, prob_vgg, binaryFilename_vgg);
+    status = annAddToGraph_vgg(graph_vgg, data_224x224, prob_vgg, binaryFilename_vgg);
     if(status) {
         printf("ERROR: vgg annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -454,7 +430,7 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
-    status = annAddToGraph_googleNet(graph_googlenet, data_googlenet, prob_googlenet, binaryFilename_googlenet);
+    status = annAddToGraph_googleNet(graph_googlenet, data_224x224, prob_googlenet, binaryFilename_googlenet);
     if(status) {
         printf("ERROR: googlenet annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -465,7 +441,7 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
-    status = annAddToGraph_resnet101(graph_resnet101, data_resnet101, prob_resnet101, binaryFilename_resnet101);
+    status = annAddToGraph_resnet101(graph_resnet101, data_224x224, prob_resnet101, binaryFilename_resnet101);
     if(status) {
         printf("ERROR: resnet101 annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -476,7 +452,7 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
-    status = annAddToGraph_resnet152(graph_resnet152, data_resnet152, prob_resnet152, binaryFilename_resnet152);
+    status = annAddToGraph_resnet152(graph_resnet152, data_224x224, prob_resnet152, binaryFilename_resnet152);
     if(status) {
         printf("ERROR: resnet152 annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -487,7 +463,7 @@ int main(int argc, const char ** argv)
         return -1;
     }
 
-    status = annAddToGraph_vgg19(graph_vgg19, data_vgg19, prob_vgg19, binaryFilename_vgg19);
+    status = annAddToGraph_vgg19(graph_vgg19, data_224x224, prob_vgg19, binaryFilename_vgg19);
     if(status) {
         printf("ERROR: vgg19 annAddToGraph() failed (%d)\n", status);
         return -1;
@@ -605,6 +581,7 @@ int main(int argc, const char ** argv)
     t1 = clockCounter();
     vgg19Time = (float)(t1-t0)*1000.0f/(float)freq/(float)N;
     printf("OK: vgg19 took %.3f msec (average over %d iterations)\n", (float)(t1-t0)*1000.0f/(float)freq/(float)N, N);
+    
     /***** OPENCV Additions *****/
 
     // create display windows
@@ -630,12 +607,10 @@ int main(int argc, const char ** argv)
     int total_size = 1000;
     int outputImgWidth = 1080, outputImgHeight = 720;
     float threshold = 0.01;
-    cv::Size input_geometry_inception = cv::Size(299, 299);
-    cv::Size input_geometry_others = cv::Size(224, 224);
     cv::Size output_geometry = cv::Size(outputImgWidth, outputImgHeight);
     Mat inputDisplay, outputDisplay;  
 
-    cv::Mat inputFrame_inception, inputFrame_other;
+    cv::Mat inputFrame_299x299, inputFrame_224x224;
     int fontFace = CV_FONT_HERSHEY_DUPLEX;
     double fontScale = 1;
     int thickness = 1.5;
@@ -666,9 +641,9 @@ int main(int argc, const char ** argv)
             // preprocess image frame
             t0 = clockCounter();
             if(runInception){
-                cv::resize(frame, inputFrame_inception, cv::Size(299,299));
+                cv::resize(frame, inputFrame_299x299, cv::Size(299,299));
             }
-            cv::resize(frame, inputFrame_other, cv::Size(224,224));
+            cv::resize(frame, inputFrame_224x224, cv::Size(224,224));
             t1 = clockCounter();
             msFrame += (float)(t1-t0)*1000.0f/(float)freq;
             //printf("LIVE: OpenCV Frame Resize Time -- %.3f msec\n", (float)(t1-t0)*1000.0f/(float)freq);
@@ -681,25 +656,25 @@ int main(int argc, const char ** argv)
             vx_map_id map_id;
             float * ptr;
             vx_size count;
-            //inception copy
+            // copy - 299x299
             if(runInception)
             {
-                vxQueryTensor(data_inception, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_inception, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_inception, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
+                vxQueryTensor(data_299x299, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
+                vxQueryTensor(data_299x299, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
+                vxQueryTensor(data_299x299, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
                 if(data_type != VX_TYPE_FLOAT32) {
                     std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
                     return -1;
                 }
                 count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_inception, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
+                vx_status status = vxMapTensorPatch(data_299x299, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
                 if(status) {
                     std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
                     return -1;
                 }
                 Mat srcImg;
                 for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_inception;
+                    srcImg = inputFrame_299x299;
                     for(vx_size y = 0; y < dims[1]; y++) {
                         unsigned char * src = srcImg.data + y*dims[0]*3;
                         float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
@@ -712,31 +687,31 @@ int main(int argc, const char ** argv)
                         }
                     }
                 }
-                status = vxUnmapTensorPatch(data_inception, map_id);
+                status = vxUnmapTensorPatch(data_299x299, map_id);
                 if(status) {
                     std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
                     return -1;
                 }
             }
-            // resnet copy
-            if(runResnet50)
+            // copy - 224x224
+            if(runResnet50 || runVgg16 || runGooglenet || runResnet101 || runResnet152 || runVgg19)
             {
-                vxQueryTensor(data_resnet, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_resnet, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_resnet, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
+                vxQueryTensor(data_224x224, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
+                vxQueryTensor(data_224x224, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
+                vxQueryTensor(data_224x224, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
                 if(data_type != VX_TYPE_FLOAT32) {
                     std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
                     return -1;
                 }
                 count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_resnet, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
+                vx_status status = vxMapTensorPatch(data_224x224, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
                 if(status) {
                     std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
                     return -1;
                 }
                 Mat srcImg;
                 for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_other;
+                    srcImg = inputFrame_224x224;
                     for(vx_size y = 0; y < dims[1]; y++) {
                         unsigned char * src = srcImg.data + y*dims[0]*3;
                         float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
@@ -749,192 +724,7 @@ int main(int argc, const char ** argv)
                         }
                     }
                 }
-                status = vxUnmapTensorPatch(data_resnet, map_id);
-                if(status) {
-                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-            }
-            // vgg copy
-            if(runVgg16)
-            {
-                vxQueryTensor(data_vgg, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_vgg, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_vgg, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
-                if(data_type != VX_TYPE_FLOAT32) {
-                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
-                    return -1;
-                }
-                count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_vgg, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
-                if(status) {
-                    std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-                Mat srcImg;
-                for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_other;
-                    for(vx_size y = 0; y < dims[1]; y++) {
-                        unsigned char * src = srcImg.data + y*dims[0]*3;
-                        float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
-                        float * dstG = dstR + (stride[2] >> 2);
-                        float * dstB = dstG + (stride[2] >> 2);
-                        for(vx_size x = 0; x < dims[0]; x++, src += 3) {
-                            *dstR++ = src[2];
-                            *dstG++ = src[1];
-                            *dstB++ = src[0];
-                        }
-                    }
-                }
-                status = vxUnmapTensorPatch(data_vgg, map_id);
-                if(status) {
-                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-            }
-            // googlenet copy
-            if(runGooglenet)
-            {
-                vxQueryTensor(data_googlenet, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_googlenet, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_googlenet, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
-                if(data_type != VX_TYPE_FLOAT32) {
-                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
-                    return -1;
-                }
-                count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_googlenet, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
-                if(status) {
-                    std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-                Mat srcImg;
-                for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_other;
-                    for(vx_size y = 0; y < dims[1]; y++) {
-                        unsigned char * src = srcImg.data + y*dims[0]*3;
-                        float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
-                        float * dstG = dstR + (stride[2] >> 2);
-                        float * dstB = dstG + (stride[2] >> 2);
-                        for(vx_size x = 0; x < dims[0]; x++, src += 3) {
-                            *dstR++ = src[2];
-                            *dstG++ = src[1];
-                            *dstB++ = src[0];
-                        }
-                    }
-                }
-                status = vxUnmapTensorPatch(data_googlenet, map_id);
-                if(status) {
-                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-            }
-            // resnet copy
-            if(runResnet101)
-            {
-                vxQueryTensor(data_resnet101, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_resnet101, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_resnet101, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
-                if(data_type != VX_TYPE_FLOAT32) {
-                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
-                    return -1;
-                }
-                count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_resnet101, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
-                if(status) {
-                    std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-                Mat srcImg;
-                for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_other;
-                    for(vx_size y = 0; y < dims[1]; y++) {
-                        unsigned char * src = srcImg.data + y*dims[0]*3;
-                        float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
-                        float * dstG = dstR + (stride[2] >> 2);
-                        float * dstB = dstG + (stride[2] >> 2);
-                        for(vx_size x = 0; x < dims[0]; x++, src += 3) {
-                            *dstR++ = src[2];
-                            *dstG++ = src[1];
-                            *dstB++ = src[0];
-                        }
-                    }
-                }
-                status = vxUnmapTensorPatch(data_resnet101, map_id);
-                if(status) {
-                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-            }
-            // resnet 152 copy
-            if(runResnet152)
-            {
-                vxQueryTensor(data_resnet152, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_resnet152, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_resnet152, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
-                if(data_type != VX_TYPE_FLOAT32) {
-                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
-                    return -1;
-                }
-                count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_resnet152, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
-                if(status) {
-                    std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-                Mat srcImg;
-                for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_other;
-                    for(vx_size y = 0; y < dims[1]; y++) {
-                        unsigned char * src = srcImg.data + y*dims[0]*3;
-                        float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
-                        float * dstG = dstR + (stride[2] >> 2);
-                        float * dstB = dstG + (stride[2] >> 2);
-                        for(vx_size x = 0; x < dims[0]; x++, src += 3) {
-                            *dstR++ = src[2];
-                            *dstG++ = src[1];
-                            *dstB++ = src[0];
-                        }
-                    }
-                }
-                status = vxUnmapTensorPatch(data_resnet152, map_id);
-                if(status) {
-                    std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-            }
-            // vgg19 copy
-            if(runVgg19)
-            {
-                vxQueryTensor(data_vgg19, VX_TENSOR_DATA_TYPE, &data_type, sizeof(data_type));
-                vxQueryTensor(data_vgg19, VX_TENSOR_NUMBER_OF_DIMS, &num_of_dims, sizeof(num_of_dims));
-                vxQueryTensor(data_vgg19, VX_TENSOR_DIMS, &dims, sizeof(dims[0])*num_of_dims);
-                if(data_type != VX_TYPE_FLOAT32) {
-                    std::cerr << "ERROR: copyTensor() supports only VX_TYPE_FLOAT32: invalid for " <<  std::endl;
-                    return -1;
-                }
-                count = dims[0] * dims[1] * dims[2] * dims[3];
-                vx_status status = vxMapTensorPatch(data_vgg19, num_of_dims, nullptr, nullptr, &map_id, stride, (void **)&ptr, usage, VX_MEMORY_TYPE_HOST, 0);
-                if(status) {
-                    std::cerr << "ERROR: vxMapTensorPatch() failed for " <<  std::endl;
-                    return -1;
-                }
-                Mat srcImg;
-                for(size_t n = 0; n < dims[3]; n++) {
-                    srcImg = inputFrame_other;
-                    for(vx_size y = 0; y < dims[1]; y++) {
-                        unsigned char * src = srcImg.data + y*dims[0]*3;
-                        float * dstR = ptr + ((n * stride[3] + y * stride[1]) >> 2);
-                        float * dstG = dstR + (stride[2] >> 2);
-                        float * dstB = dstG + (stride[2] >> 2);
-                        for(vx_size x = 0; x < dims[0]; x++, src += 3) {
-                            *dstR++ = src[2];
-                            *dstG++ = src[1];
-                            *dstB++ = src[0];
-                        }
-                    }
-                }
-                status = vxUnmapTensorPatch(data_vgg19, map_id);
+                status = vxUnmapTensorPatch(data_224x224, map_id);
                 if(status) {
                     std::cerr << "ERROR: vxUnmapTensorPatch() failed for " <<  std::endl;
                     return -1;
@@ -1323,28 +1113,31 @@ int main(int argc, const char ** argv)
     for(int models = 0; models < 7; models++){
         delete outputBuffer[models];
     }
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_inception));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_inception));
+    // release input data
+    ERROR_CHECK_STATUS(vxReleaseTensor(&data_299x299));
+    ERROR_CHECK_STATUS(vxReleaseTensor(&data_224x224));
+
+    // release output data
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_inception));
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_resnet));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_resnet));
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_resnet));
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_vgg));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_vgg));
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_vgg));
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_googlenet));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_googlenet));
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_googlenet));
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_resnet101));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_resnet101));
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_resnet101));
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_resnet152));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_resnet152));
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_resnet152));
-    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_vgg19));
-    ERROR_CHECK_STATUS(vxReleaseTensor(&data_vgg19));
     ERROR_CHECK_STATUS(vxReleaseTensor(&prob_vgg19));
+
+    // release graphs
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_inception));
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_resnet));
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_vgg));
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_googlenet));
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_resnet101));
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_resnet152));
+    ERROR_CHECK_STATUS(vxReleaseGraph(&graph_vgg19));
+
+    // release context
     ERROR_CHECK_STATUS(vxReleaseContext(&context));
+
     printf("OK: successful\n");
 
     return 0;
