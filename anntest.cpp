@@ -234,8 +234,8 @@ int main(int argc, const char ** argv)
     if(argc < 8) {
         printf(
             "\n"
-            "Usage: ./classifier <inception weights.bin> <resnet weights.bin> <vgg weights.bin> <googlenet weights.bin> "
-            "<resnet101 weights.bin> <resnet152 weights.bin> <vgg19 weights.bin>[ --label <label text> <--video file>/<--capture 0> ] \n"
+            "Usage: ./classifier <inceptionV4 weights.bin> <resnet50 weights.bin> <vgg16 weights.bin> <googlenet weights.bin> "
+            "<resnet101 weights.bin> <resnet152 weights.bin> <vgg19 weights.bin> [ --label <label text> <--video file>/<--capture 0> ] \n"
             "\n"
         );
         return -1;
