@@ -3,5 +3,5 @@
 ````
 cmake .
 make
-./anntest
+./classifier
 ````
