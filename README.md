@@ -4,6 +4,12 @@
 
 This application runs know CNN image classifiers on live/pre-recorded video stream.
 
+## MIVisionX Image Classification Control
+[![MIVisionX Image Classification](MIVisionX-ImageClassification.png)](https://github.com/kiritigowda/MIVisionX-setup) 
+
+## MIVisionX Image Classification
+[![MIVisionX Image Classifier](classifier.png)](https://github.com/kiritigowda/MIVisionX-setup) 
+
 ## Usage
 ### Build
 ````
@@ -54,8 +60,3 @@ If you want to test with a live cam, turn on this option.
 ./classifier /PATH/TO/inceptionV4/weights.bin /PATH/TO/resnet50/weights.bin /PATH/TO/vgg16/weights.bin ... 
 .../PATH/TO/vgg19/weights.bin --label labels.txt --capture 0
 ```
-# MIVisionX Image Classification Control
-[![MIVisionX Image Classification](MIVisionX-ImageClassification.png)](https://github.com/kiritigowda/MIVisionX-setup) 
-
-# MIVisionX Image Classification
-[![MIVisionX Image Classifier](classifier.png)](https://github.com/kiritigowda/MIVisionX-setup) 
