@@ -1,4 +1,5 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/kiritigowda/MIVisionX-Classifier.svg?branch=master)](https://travis-ci.org/kiritigowda/MIVisionX-Classifier)
 
 # Live Image Classification
 
