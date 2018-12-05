@@ -15,6 +15,8 @@ This application runs know CNN image classifiers on live/pre-recorded video stre
 Setup your system by running setup and build scripts from [MIVisionX](https://github.com/kiritigowda/MIVisionX-setup) setup project
 ### Build
 ````
+git clone https://github.com/kiritigowda/MIVisionX-Classifier
+cd MIVisionX-Classifier
 cmake .
 make
 ````
