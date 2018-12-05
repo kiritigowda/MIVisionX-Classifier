@@ -235,7 +235,7 @@ int main(int argc, const char ** argv)
         printf(
             "\n"
             "Usage: ./classifier <inceptionV4 weights.bin> <resnet50 weights.bin> <vgg16 weights.bin> <googlenet weights.bin> "
-            "<resnet101 weights.bin> <resnet152 weights.bin> <vgg19 weights.bin> [ --label <label text> <--video file>/<--capture 0> ] \n"
+            "<resnet101 weights.bin> <resnet152 weights.bin> <vgg19 weights.bin> [ --label <label text> --video <video file>/<--capture 0> ] \n"
             "\n"
         );
         return -1;
@@ -256,8 +256,11 @@ int main(int argc, const char ** argv)
     std::string labelText[1000];
     int captureID = -1;
 
-    if(argc && !strcasecmp(*argv, "--label"))
+    bool captureFromVideo = false;
+
+    if (argc && !strcasecmp(*argv, "--label"))
     {
+        argc--;
         argv++;
         labelFileName = *argv;
         std::string line;
@@ -268,19 +271,20 @@ int main(int argc, const char ** argv)
             lineNum++;
         }
         out.close();
+        argc--;
+        argv++;
     }
-
     if (argc && !strcasecmp(*argv, "--video"))
     {
         argv++;
         videoFile = *argv;
+        captureFromVideo = true;
     }
     else if (argc && !strcasecmp(*argv, "--capture"))
     {
         argv++;
         captureID = atoi(*argv);
     }
-    
 
     // create context, input, output, and graph
     vxRegisterLogCallback(NULL, log_callback, vx_false_e);
@@ -620,11 +624,24 @@ int main(int argc, const char ** argv)
     }
 
     int loopSeg = 1;
+
     while(argc && loopSeg)
     {
         VideoCapture cap;
-        if(!cap.open(0))
-            return 0;
+        if (captureFromVideo) {
+            cap.open(videoFile);
+            if(!cap.isOpened()) {
+                std::cout << "Unable to open the video: " << videoFile << std::endl;
+                return 0;
+            }
+        }
+        else {
+            cap.open(captureID);
+            if(!cap.isOpened()) {
+                std::cout << "Unable to open the camera feed: " << captureID << std::endl;
+                return 0;
+            }
+        }
         int frameCount = 0;
         float msFrame = 0, fpsAvg = 0, frameMsecs = 0;
         for(;;)
